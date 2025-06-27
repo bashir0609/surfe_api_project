@@ -105,39 +105,33 @@ class ApiKeyManager:
             }
         return stats
 
-# --- Load API Keys from JSON file ---
+# --- Load API Keys from Environment Variables ---
 SURFE_API_KEYS: List[str] = []
 api_key_manager = ApiKeyManager()
 
-# Define the path to your api_keys.json file
-API_KEYS_FILE = os.path.join(os.path.dirname(__file__), '..', 'api_keys.json')
+# List of expected environment variable names for your API keys
+# You can adjust the range based on how many keys you have (e.g., 1 to 5)
+ENV_VAR_KEY_NAMES = [f"SURFE_API_KEY_{i}" for i in range(1, 6)] # Assuming SURFE_API_KEY_1 to SURFE_API_KEY_5
 
-print(f"DEBUG_PATH: Current file location: {os.path.abspath(__file__)}")
-print(f"DEBUG_PATH: Calculated API_KEYS_FILE path: {os.path.abspath(API_KEYS_FILE)}")
+found_keys_count = 0
+for env_var_name in ENV_VAR_KEY_NAMES:
+    api_key_value = os.getenv(env_var_name)
+    if api_key_value:
+        SURFE_API_KEYS.append(api_key_value)
+        api_key_manager.add_key(api_key_value) # Add directly to manager
+        found_keys_count += 1
 
-try:
-    with open(API_KEYS_FILE, 'r') as f:
-        keys_data = json.load(f)
-        SURFE_API_KEYS = [value for key, value in keys_data.items() if key.startswith("surfe_api_key") and isinstance(value, str)]
+if not SURFE_API_KEYS:
+    logging.critical(
+        f"CRITICAL: No Surfe API keys found from environment variables: {', '.join(ENV_VAR_KEY_NAMES)}. "
+        "Please ensure these environment variables are set in Vercel for your project."
+    )
+    # Raising a RuntimeError will cause the application to fail to start, which is intended
+    # if there are no API keys for critical functionality.
+    raise RuntimeError("Critical: No Surfe API keys loaded from environment variables.")
+else:
+    logging.info(f"Loaded {found_keys_count} Surfe API keys from environment variables.")
 
-    if not SURFE_API_KEYS:
-        logging.warning(f"No valid Surfe API keys found in '{API_KEYS_FILE}'. Please ensure the file exists and contains keys like 'surfe_api_keyX' with string values.")
-        raise RuntimeError(f"Critical: No Surfe API keys loaded from '{API_KEYS_FILE}'.")
-    else:
-        # Initialize the API key manager with loaded keys
-        for key in SURFE_API_KEYS:
-            api_key_manager.add_key(key)
-        logging.info(f"Loaded {len(SURFE_API_KEYS)} Surfe API keys from '{API_KEYS_FILE}'.")
-
-except FileNotFoundError:
-    logging.error(f"API keys file not found: '{API_KEYS_FILE}'. Please create it with your Surfe API keys.")
-    raise RuntimeError(f"Critical: Surfe API keys file not found at '{API_KEYS_FILE}'.")
-except json.JSONDecodeError:
-    logging.error(f"Error decoding JSON from '{API_KEYS_FILE}'. Please check file format.")
-    raise RuntimeError(f"Critical: Error decoding JSON from '{API_KEYS_FILE}'.")
-except Exception as e:
-    logging.error(f"An unexpected error occurred while loading API keys from '{API_KEYS_FILE}': {e}")
-    raise RuntimeError(f"Critical: Failed to load API keys: {e}")
 
 # Import base URL from centralized config
 try:
@@ -284,7 +278,7 @@ class SurfeClient:
                     elif status_code == 403:
                         if self._is_quota_exceeded_error(error_info):
                             logger.warning(f"Quota exceeded for key ...{key_info.key[-5:]}. Rotating to next key.")
-                            self._key_manager.mark_key_quota_exceeded(key_info.key)
+                            self._key_manager.mark_key_quota_exceeded(key_info.key, cooldown_minutes=60) # Keep 60 min cooldown for 403
                             await asyncio.sleep(retry_delay)  # Brief pause before trying next key
                             continue
                         else:
@@ -309,7 +303,6 @@ class SurfeClient:
                         self._key_manager.mark_key_failed(key_info.key)
                         return response_data
                 else:
-                    # FIXED: No status_code means we check for actual data content
                     # If response_data has actual business data (not just error), it's successful
                     if not error_info and self._has_business_data(response_data):
                         self._key_manager.mark_key_successful(key_info.key)
