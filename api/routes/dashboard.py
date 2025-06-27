@@ -118,7 +118,7 @@ def add_activity(activity_type, description, details=None):
 async def get_dashboard_stats(api_key: str = Depends(get_api_key)):
     """
     Retrieves and returns dashboard statistics.
-    This endpoint now sources its data from Vercel KV.
+    FIXED: Better error handling and removed problematic API call.
     """
     try:
         stats = load_stats() # Loads stats from KV
@@ -135,23 +135,22 @@ async def get_dashboard_stats(api_key: str = Depends(get_api_key)):
         # Get current job manager status (assuming job_manager is still in-memory for current request)
         current_jobs = len(job_manager.jobs) if hasattr(job_manager, 'jobs') else 0
 
-        # This block forces surfe_client.make_request_with_rotation to run,
-        # ensuring _last_api_key_used is populated.
-        # We use a very lightweight API call (e.g., companies search with limit 1 and no specific filters)
-        # or a diagnostics endpoint if Surfe API has one.
+        # FIXED: Get active API key without making external API call
+        active_api_key = "N/A"
         try:
-            await surfe_client.make_request_with_rotation(
-                "POST",
-                "/v2/companies/search", # Use a known valid, lightweight endpoint
-                json_data={"filters": {"domain": {"operator": "eq", "value": "google.com"}}, "limit": 1} # Minimal payload
-            )
-            logger.info("Dashboard stats endpoint successfully triggered API client to use an active_api_key.")
-        except Exception as api_call_e:
-            logger.warning(f"Dashboard stats endpoint failed to trigger API client for active_api_key: {api_call_e}")
-            # This is non-critical for dashboard display, so we just log the warning.
-        
-        # Get the masked active API key from the SurfeClient instance
-        active_api_key = surfe_client.get_last_api_key_masked()
+            # Import here to avoid circular imports
+            from utils.api_client import surfe_client
+            active_api_key = surfe_client.get_last_api_key_masked()
+            if active_api_key == "N/A (No API Key Used Yet)":
+                # If no key has been used yet, just show that we have keys available
+                if hasattr(surfe_client, '_key_manager') and surfe_client._key_manager.keys:
+                    available_count = len([k for k in surfe_client._key_manager.keys if not k.is_temporarily_disabled])
+                    active_api_key = f"{available_count} keys available"
+                else:
+                    active_api_key = "Not configured"
+        except Exception as api_error:
+            logger.warning(f"Could not get active API key: {api_error}")
+            active_api_key = "Error getting key info"
 
         return {
             "success": True,
@@ -163,16 +162,16 @@ async def get_dashboard_stats(api_key: str = Depends(get_api_key)):
                 "total_jobs": total_jobs,
                 "recent_activity": stats.get("recent_activity", [])[:5],
                 "last_updated": stats.get("last_updated"),
-                "active_api_key": active_api_key # This will now be populated
+                "active_api_key": active_api_key
             }
         }
 
     except Exception as e:
         logger.error(f"Error getting dashboard stats: {e}")
-        # Return a success: True response even on error to allow the dashboard frontend
-        # to load with default data, but include the error message for debugging.
+        # FIXED: Return error response instead of fake success
         return {
-            "success": True,
+            "success": False,
+            "error": f"Failed to load dashboard stats: {str(e)}",
             "data": {
                 "companies_found": 0,
                 "people_enriched": 0,
@@ -180,8 +179,7 @@ async def get_dashboard_stats(api_key: str = Depends(get_api_key)):
                 "current_jobs": 0,
                 "total_jobs": 0,
                 "recent_activity": [],
-                "error": str(e),
-                "active_api_key": surfe_client.get_last_api_key_masked()
+                "active_api_key": "Error"
             }
         }
 
