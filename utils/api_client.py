@@ -110,16 +110,23 @@ SURFE_API_KEYS: List[str] = []
 api_key_manager = ApiKeyManager()
 
 # List of expected environment variable names for your API keys
-# You can adjust the range based on how many keys you have (e.g., 1 to 5)
-ENV_VAR_KEY_NAMES = [f"SURFE_API_KEY_{i}" for i in range(1, 6)] # Assuming SURFE_API_KEY_1 to SURFE_API_KEY_5
+ENV_VAR_KEY_NAMES = [f"SURFE_API_KEY_{i}" for i in range(1, 6)]
 
 found_keys_count = 0
+# --- START DEBUGGING BLOCK ---
+logging.info("DEBUG: Attempting to load Surfe API keys from environment variables...")
+all_env_vars = os.environ # Get all env vars for comprehensive logging (temporarily)
+logging.info(f"DEBUG: First 10 environment variables in os.environ: {list(all_env_vars.items())[:10]}") # Be careful with sensitive info!
+logging.info(f"DEBUG: Expected keys: {ENV_VAR_KEY_NAMES}")
+
 for env_var_name in ENV_VAR_KEY_NAMES:
     api_key_value = os.getenv(env_var_name)
+    logging.info(f"DEBUG: Checking env var '{env_var_name}'. Value found: {'<hidden>' if api_key_value else 'None'}") # Log if value is found
     if api_key_value:
         SURFE_API_KEYS.append(api_key_value)
         api_key_manager.add_key(api_key_value) # Add directly to manager
         found_keys_count += 1
+# --- END DEBUGGING BLOCK ---
 
 if not SURFE_API_KEYS:
     logging.critical(
