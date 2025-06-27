@@ -15,6 +15,11 @@ from dataclasses import dataclass, field
 
 print("Loading enhanced api_client.py") # DEBUG PRINT
 
+# Configure logging to show INFO and DEBUG messages
+logging.basicConfig(level=logging.INFO) # Changed to INFO, will log all below it
+logger = logging.getLogger(__name__)
+
+
 # --- API Key Management ---
 @dataclass
 class ApiKeyInfo:
@@ -38,31 +43,43 @@ class ApiKeyManager:
         """Add a new API key to the manager"""
         if not any(k.key == key for k in self.keys):
             self.keys.append(ApiKeyInfo(key=key))
+            logger.info(f"Key Manager: Added key ...{key[-5:]}. Total keys: {len(self.keys)}")
     
     def get_next_available_key(self) -> Optional[ApiKeyInfo]:
         """Get the next available API key, skipping disabled ones"""
         if not self.keys:
+            logger.warning("Key Manager: No API keys registered.")
             return None
         
+        initial_index = self.current_index
         attempts = 0
         while attempts < len(self.keys):
             key_info = self.keys[self.current_index]
             self.current_index = (self.current_index + 1) % len(self.keys)
             
+            logger.debug(f"Key Manager: Checking key ...{key_info.key[-5:]}. Current index: {self.current_index}. Is disabled: {key_info.is_temporarily_disabled}")
+
             # Check if key is temporarily disabled and if cooldown period has passed
-            if key_info.is_temporarily_disabled and key_info.quota_reset_time:
-                if datetime.now() > key_info.quota_reset_time:
+            if key_info.is_temporarily_disabled:
+                if key_info.quota_reset_time and datetime.now() > key_info.quota_reset_time:
                     key_info.is_temporarily_disabled = False
                     key_info.quota_reset_time = None
-                    logging.info(f"Re-enabled API key ...{key_info.key[-5:]} after cooldown")
+                    logger.info(f"Key Manager: Re-enabled API key ...{key_info.key[-5:]} after cooldown.")
+                else:
+                    logger.debug(f"Key Manager: Key ...{key_info.key[-5:]} is still disabled. Cooldown until: {key_info.quota_reset_time}")
             
             if not key_info.is_temporarily_disabled:
                 key_info.last_used = datetime.now()
                 key_info.total_requests += 1
+                logger.debug(f"Key Manager: Returning available key ...{key_info.key[-5:]}")
                 return key_info
             
             attempts += 1
+            if attempts == len(self.keys): # If we've circled back to the start and all are disabled
+                logger.warning("Key Manager: All API keys are currently disabled or on cooldown.")
+                break # Exit loop
         
+        logger.warning("Key Manager: No available keys found after checking all options.")
         return None  # All keys are disabled
     
     def mark_key_quota_exceeded(self, key: str, cooldown_minutes: int = 60):
@@ -72,21 +89,28 @@ class ApiKeyManager:
                 key_info.is_temporarily_disabled = True
                 key_info.quota_reset_time = datetime.now() + timedelta(minutes=cooldown_minutes)
                 key_info.failed_attempts += 1
-                logging.warning(f"Disabled API key ...{key[-5:]} for {cooldown_minutes} minutes due to quota")
+                logger.warning(f"Key Manager: Disabled API key ...{key[-5:]} for {cooldown_minutes} minutes due to quota.")
                 break
     
     def mark_key_failed(self, key: str):
-        """Mark a key as failed (for tracking purposes)"""
+        """Mark a key as failed (for tracking purposes), and temporarily disable it for a short period."""
         for key_info in self.keys:
             if key_info.key == key:
                 key_info.failed_attempts += 1
+                key_info.is_temporarily_disabled = True # Temporarily disable for any failure
+                key_info.quota_reset_time = datetime.now() + timedelta(minutes=5) # Short 5-min cooldown
+                logger.warning(f"Key Manager: Marked API key ...{key[-5:]} as failed and disabled for 5 minutes.")
                 break
     
     def mark_key_successful(self, key: str):
-        """Mark a key as successful"""
+        """Mark a key as successful and re-enable it if it was temporarily disabled."""
         for key_info in self.keys:
             if key_info.key == key:
                 key_info.successful_requests += 1
+                if key_info.is_temporarily_disabled:
+                    key_info.is_temporarily_disabled = False
+                    key_info.quota_reset_time = None
+                    logger.info(f"Key Manager: Re-enabled API key ...{key[-5:]} due to success.")
                 break
     
     def get_key_stats(self) -> Dict[str, Dict[str, Any]]:
@@ -113,31 +137,30 @@ api_key_manager = ApiKeyManager()
 ENV_VAR_KEY_NAMES = [f"SURFE_API_KEY_{i}" for i in range(1, 6)]
 
 found_keys_count = 0
-# --- START DEBUGGING BLOCK ---
-logging.info("DEBUG: Attempting to load Surfe API keys from environment variables...")
+# --- START DEBUGGING BLOCK for ENV VARS ---
+logger.info("DEBUG_ENV: Attempting to load Surfe API keys from environment variables...")
 all_env_vars = os.environ # Get all env vars for comprehensive logging (temporarily)
-logging.info(f"DEBUG: First 10 environment variables in os.environ: {list(all_env_vars.items())[:10]}") # Be careful with sensitive info!
-logging.info(f"DEBUG: Expected keys: {ENV_VAR_KEY_NAMES}")
+# Log only the first few to avoid exposing too much, and mask values
+logger.info(f"DEBUG_ENV: First 10 environment variables in os.environ (masked): {[f'{k}: <hidden>' for k, v in list(all_env_vars.items())[:10]]}") 
+logger.info(f"DEBUG_ENV: Expected API key env var names: {ENV_VAR_KEY_NAMES}")
 
 for env_var_name in ENV_VAR_KEY_NAMES:
     api_key_value = os.getenv(env_var_name)
-    logging.info(f"DEBUG: Checking env var '{env_var_name}'. Value found: {'<hidden>' if api_key_value else 'None'}") # Log if value is found
+    logger.info(f"DEBUG_ENV: Checking env var '{env_var_name}'. Value found: {'<hidden>' if api_key_value else 'None'}") 
     if api_key_value:
         SURFE_API_KEYS.append(api_key_value)
         api_key_manager.add_key(api_key_value) # Add directly to manager
         found_keys_count += 1
-# --- END DEBUGGING BLOCK ---
+# --- END DEBUGGING BLOCK for ENV VARS ---
 
 if not SURFE_API_KEYS:
-    logging.critical(
+    logger.critical(
         f"CRITICAL: No Surfe API keys found from environment variables: {', '.join(ENV_VAR_KEY_NAMES)}. "
         "Please ensure these environment variables are set in Vercel for your project."
     )
-    # Raising a RuntimeError will cause the application to fail to start, which is intended
-    # if there are no API keys for critical functionality.
     raise RuntimeError("Critical: No Surfe API keys loaded from environment variables.")
 else:
-    logging.info(f"Loaded {found_keys_count} Surfe API keys from environment variables.")
+    logger.info(f"Loaded {found_keys_count} Surfe API keys from environment variables.")
 
 
 # Import base URL from centralized config
@@ -146,7 +169,8 @@ try:
 except ImportError:
     SURFE_API_BASE_URL = "https://api.surfe.com"
 
-logger = logging.getLogger(__name__)
+# Moved logger initialization below config import
+# logger = logging.getLogger(__name__) # Already initialized globally above
 
 async def make_surfe_request(
     method: str,
@@ -169,8 +193,8 @@ async def make_surfe_request(
     # Log request details
     logger.info(f"🔍 Making {method} request to: {url}")
     logger.info(f"🔍 Using API key: ...{api_key[-5:]}")
-    logger.info(f"🔍 JSON Data: {json.dumps(json_data, indent=2) if json_data else 'None'}")
-    logger.info(f"🔍 Params: {params}")
+    logger.debug(f"🔍 JSON Data: {json.dumps(json_data, indent=2) if json_data else 'None'}") # Debug level for data
+    logger.debug(f"🔍 Params: {params}") # Debug level for params
 
     try:
         async with aiohttp.ClientSession() as session:
@@ -184,10 +208,10 @@ async def make_surfe_request(
             ) as response:
 
                 logger.info(f"🔍 Response Status: {response.status}")
-                logger.info(f"🔍 Response Headers: {dict(response.headers)}")
+                logger.debug(f"🔍 Response Headers: {dict(response.headers)}") # Debug level for headers
 
                 response_text = await response.text()
-                logger.info(f"🔍 Raw Response: {response_text}")
+                logger.debug(f"🔍 Raw Response: {response_text}") # Debug level for raw response
 
                 if 200 <= response.status < 300:
                     try:
@@ -225,9 +249,6 @@ class SurfeClient:
         self._last_api_key_used: Optional[str] = None
         self._request_count = 0
         
-    # Fix for the SurfeClient.make_request_with_rotation method
-    # Replace this method in your SurfeClient class
-
     async def make_request_with_rotation(
             self,
             method: str,
@@ -254,12 +275,12 @@ class SurfeClient:
                 key_info = self._key_manager.get_next_available_key()
                 
                 if not key_info:
-                    logger.error("All API keys are temporarily disabled. Waiting before retrying...")
+                    logger.warning(f"Rotation: All API keys are temporarily disabled. Attempt {attempt + 1}/{max_retries}. Waiting before retrying...")
                     await asyncio.sleep(retry_delay * (2 ** min(attempt, 5)))  # Exponential backoff, max 32s
                     continue
                     
                 self._last_api_key_used = key_info.key
-                logger.info(f"Attempt {attempt + 1}/{max_retries}: Using key ...{key_info.key[-5:]} for {endpoint}")
+                logger.info(f"Rotation: Attempt {attempt + 1}/{max_retries}: Using key ...{key_info.key[-5:]} for {endpoint}")
 
                 response_data = await make_surfe_request(
                     method=method,
@@ -279,50 +300,55 @@ class SurfeClient:
                     # Handle successful responses (200-299)
                     if 200 <= status_code < 300:
                         self._key_manager.mark_key_successful(key_info.key)
-                        logger.info(f"✅ Request successful with key ...{key_info.key[-5:]}")
+                        logger.info(f"Rotation: ✅ Request successful with key ...{key_info.key[-5:]}. Status: {status_code}")
                         return response_data
-                    # Handle quota exceeded (403)
+                    # Handle specific errors that should disable keys
+                    elif status_code == 401: # Unauthorized - definitely a bad key
+                        logger.error(f"Rotation: ❌ Unauthorized (401) for key ...{key_info.key[-5:]}. Disabling key permanently.")
+                        # Mark as permanently disabled by setting very long cooldown
+                        self._key_manager.mark_key_quota_exceeded(key_info.key, cooldown_minutes=99999) 
+                        return response_data # Return immediately, this key is useless
                     elif status_code == 403:
                         if self._is_quota_exceeded_error(error_info):
-                            logger.warning(f"Quota exceeded for key ...{key_info.key[-5:]}. Rotating to next key.")
+                            logger.warning(f"Rotation: Quota exceeded (403) for key ...{key_info.key[-5:]}. Rotating to next key.")
                             self._key_manager.mark_key_quota_exceeded(key_info.key, cooldown_minutes=60) # Keep 60 min cooldown for 403
                             await asyncio.sleep(retry_delay)  # Brief pause before trying next key
                             continue
                         else:
-                            logger.error(f"403 Forbidden (not quota-related) from Surfe API: {error_info}")
-                            self._key_manager.mark_key_failed(key_info.key)
-                            return response_data
-                    # Handle server errors (500, 502, 503, 504)
+                            logger.error(f"Rotation: 403 Forbidden (not quota-related) from Surfe API for key ...{key_info.key[-5:]}: {error_info}. Marking failed.")
+                            self._key_manager.mark_key_failed(key_info.key) # Mark failed for a short cooldown
+                            return response_data # Might return the error
+                    # Handle server errors (5xx)
                     elif status_code in [500, 502, 503, 504]:
-                        logger.warning(f"Server error ({status_code}) from Surfe API. Retrying with backoff.")
-                        self._key_manager.mark_key_failed(key_info.key)
+                        logger.warning(f"Rotation: Server error ({status_code}) from Surfe API with key ...{key_info.key[-5:]}. Retrying with backoff.")
+                        self._key_manager.mark_key_failed(key_info.key) # Mark failed for short cooldown
                         await asyncio.sleep(retry_delay * (2 ** min(attempt, 3)))  # Exponential backoff for server errors
                         continue
                     # Handle rate limiting (429)
                     elif status_code == 429:
-                        logger.warning(f"Rate limited (429) from Surfe API. Implementing backoff strategy.")
+                        logger.warning(f"Rotation: Rate limited (429) from Surfe API for key ...{key_info.key[-5:]}. Implementing backoff strategy.")
                         self._key_manager.mark_key_quota_exceeded(key_info.key, cooldown_minutes=5)  # Shorter cooldown for rate limiting
                         await asyncio.sleep(retry_delay * (2 ** min(attempt, 4)))
                         continue
-                    # Handle other client errors (400, 401, 404, etc.)
+                    # Handle other client errors (400, 404, etc.)
                     else:
-                        logger.error(f"Non-retryable error ({status_code}) from Surfe API: {error_info}")
-                        self._key_manager.mark_key_failed(key_info.key)
+                        logger.error(f"Rotation: Non-retryable error ({status_code}) from Surfe API for key ...{key_info.key[-5:]}: {error_info}. Marking failed.")
+                        self._key_manager.mark_key_failed(key_info.key) # Mark failed for short cooldown
                         return response_data
-                else:
+                else: # No status code - means underlying request error
                     # If response_data has actual business data (not just error), it's successful
                     if not error_info and self._has_business_data(response_data):
                         self._key_manager.mark_key_successful(key_info.key)
-                        logger.info(f"✅ Request successful with key ...{key_info.key[-5:]} (no status code, but has data)")
+                        logger.info(f"Rotation: ✅ Request successful with key ...{key_info.key[-5:]} (no status code, but has data).")
                         return response_data
                     else:
                         # No status code and no business data = error
-                        logger.error(f"Request failed with no status code: {error_info}")
-                        self._key_manager.mark_key_failed(key_info.key)
+                        logger.error(f"Rotation: Request failed with no status code for key ...{key_info.key[-5:]}: {error_info}. Marking failed.")
+                        self._key_manager.mark_key_failed(key_info.key) # Mark failed for short cooldown
                         return response_data
 
             # All retries exhausted
-            logger.error(f"Failed to complete API request after {max_retries} attempts.")
+            logger.error(f"Rotation: Failed to complete API request after {max_retries} attempts. All keys might be disabled.")
             return {"error": "All API keys failed or max retries reached.", "status_code": 500}
 
     def _has_business_data(self, response_data: Dict[str, Any]) -> bool:
@@ -392,10 +418,22 @@ class SurfeClient:
         results = []
         for key_info in self._key_manager.keys:
             if not key_info.is_temporarily_disabled:
-                result = await make_surfe_request("GET", endpoint, key_info.key, timeout=10)
+                # Use a specific health check endpoint if available, otherwise a lightweight one
+                test_endpoint = endpoint if endpoint != "/health" else "/v2/companies/search"
+                test_json_data = {"filters": {"domain": {"operator": "eq", "value": "google.com"}}, "limit": 1} if test_endpoint == "/v2/companies/search" else None
+
+                result = await make_surfe_request("POST" if test_endpoint == "/v2/companies/search" else "GET", 
+                                                test_endpoint, 
+                                                key_info.key, 
+                                                json_data=test_json_data, 
+                                                timeout=10)
+                
+                status_code = result.get("status_code", 0)
+                is_healthy = 200 <= status_code < 300 or self._has_business_data(result) # Check for 2xx or actual data
+                
                 results.append({
                     "key": f"...{key_info.key[-5:]}",
-                    "status": "healthy" if result.get("status_code", 0) < 400 else "unhealthy",
+                    "status": "healthy" if is_healthy else "unhealthy",
                     "response": result
                 })
             else:
