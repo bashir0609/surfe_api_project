@@ -1,10 +1,4 @@
 {
-  "functions": {
-    "main.py": {
-      "runtime": "python3.9",
-      "maxDuration": 30
-    }
-  },
   "routes": [
     {
       "src": "/static/(.*)",
@@ -14,8 +8,5 @@
       "src": "/(.*)",
       "dest": "main.py"
     }
-  ],
-  "env": {
-    "PYTHONPATH": "/var/task"
-  }
+  ]
 }
