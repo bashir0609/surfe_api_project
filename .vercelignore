@@ -1,0 +1,13 @@
+# Don't ignore static files
+!static/
+!static/css/
+!static/js/
+!templates/
+
+# Ignore development files
+__pycache__/
+*.pyc
+.env
+.venv/
+node_modules/
+.git/
