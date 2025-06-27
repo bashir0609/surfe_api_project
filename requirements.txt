@@ -4,3 +4,4 @@ aiohttp
 jinja2
 redis
 python-multipart
+aiofiles
