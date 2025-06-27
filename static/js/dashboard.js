@@ -189,37 +189,167 @@ function initDashboard() {
 // Load dashboard statistics
 async function loadDashboardStats() {
     try {
+        console.log('Loading dashboard stats...');
         const response = await makeRequest('/api/dashboard/stats', 'GET');
         
-        if (response.success) {
+        console.log('Dashboard stats response:', response);
+        
+        if (response && response.success) {
             updateDashboardUI(response.data);
         } else {
-            showError('Failed to load dashboard stats');
+            // FIXED: Better error handling for failed responses
+            const errorMessage = response.error || response.detail || 'Unknown error occurred';
+            console.error('Dashboard stats failed:', errorMessage);
+            showError(errorMessage);
+            
+            // FIXED: Show default data even when there's an error
+            updateDashboardUI({
+                companies_found: 0,
+                people_enriched: 0,
+                success_rate: 0,
+                current_jobs: 0,
+                total_jobs: 0,
+                recent_activity: [],
+                active_api_key: 'Error',
+                error: errorMessage
+            });
         }
     } catch (error) {
         console.error('Error loading dashboard stats:', error);
-        showError(`Error loading dashboard: ${error.message}`);
+        const errorMessage = `Network error: ${error.message}`;
+        showError(errorMessage);
+        
+        // FIXED: Show default data with error info
+        updateDashboardUI({
+            companies_found: 0,
+            people_enriched: 0,
+            success_rate: 0,
+            current_jobs: 0,
+            total_jobs: 0,
+            recent_activity: [],
+            active_api_key: 'Network Error',
+            error: errorMessage
+        });
+    }
+}
+
+// FIXED: Enhanced makeRequest function with better error handling
+async function makeRequest(endpoint, method = 'GET', data = null) {
+    let url;
+
+    // Determine if this should go to local backend or external Surfe API
+    if (endpoint.startsWith('/api/')) {
+        // Local backend endpoints (your custom API)
+        const baseUrl = window.location.origin; // FIXED: Use current origin instead of hardcoded localhost
+        url = `${baseUrl}${endpoint}`;
+        console.log(`🏠 LOCAL: Making ${method} request to: ${url}`);
+    } else if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+        // Full URLs (external APIs like Surfe)
+        url = endpoint;
+        console.log(`🌐 EXTERNAL: Making ${method} request to: ${url}`);
+    } else {
+        // Relative paths - assume external Surfe API for backward compatibility
+        const surfeBaseUrl = 'https://api.surfe.com';
+        url = `${surfeBaseUrl}${endpoint}`;
+        console.log(`🌐 SURFE: Making ${method} request to: ${url}`);
+    }
+
+    const options = {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+    };
+
+    if (data && method !== 'GET') {
+        options.body = JSON.stringify(data);
+        console.log(`📤 Request data:`, data);
+    }
+
+    try {
+        const response = await fetch(url, options);
+        console.log(`📥 Response status: ${response.status}`);
+
+        // FIXED: Handle non-JSON responses gracefully
+        let result;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            result = await response.json();
+        } else {
+            const text = await response.text();
+            result = { 
+                success: false, 
+                error: `Non-JSON response: ${text.substring(0, 100)}...`,
+                status: response.status 
+            };
+        }
+        
+        console.log(`📦 Response data:`, result);
+
+        // FIXED: Return result with status info even if not ok
+        if (!response.ok) {
+            return {
+                success: false,
+                error: result.error || result.detail || `HTTP ${response.status}`,
+                status: response.status,
+                ...result
+            };
+        }
+
+        return result;
+    } catch (error) {
+        console.error('🚨 Fetch error:', error);
+        return { 
+            success: false, 
+            error: `Network error: ${error.message}`,
+            type: 'network_error'
+        };
     }
 }
 
 // Update dashboard UI with data
 function updateDashboardUI(data) {
-    // Update stats cards
-    document.getElementById('companies-found').textContent = data.companies_found?.toLocaleString() || '0';
-    document.getElementById('people-enriched').textContent = data.people_enriched?.toLocaleString() || '0';
+    console.log('Updating dashboard UI with data:', data);
+    
+    // Update stats cards with fallback values
+    document.getElementById('companies-found').textContent = (data.companies_found || 0).toLocaleString();
+    document.getElementById('people-enriched').textContent = (data.people_enriched || 0).toLocaleString();
     document.getElementById('success-rate').textContent = `${data.success_rate || 0}%`;
     
     // Update last updated time
     if (data.last_updated) {
-        const lastUpdated = new Date(data.last_updated);
-        document.getElementById('last-updated').textContent = `Last updated: ${lastUpdated.toLocaleString()}`;
+        try {
+            const lastUpdated = new Date(data.last_updated);
+            document.getElementById('last-updated').textContent = `Last updated: ${lastUpdated.toLocaleString()}`;
+        } catch (e) {
+            document.getElementById('last-updated').textContent = 'Last updated: Unknown';
+        }
+    } else {
+        document.getElementById('last-updated').textContent = 'Last updated: Never';
     }
     
-    // Update active API key
-    document.getElementById('active-api-key').textContent = data.active_api_key || 'N/A';
+    // Update active API key with error handling
+    const apiKeyElement = document.getElementById('active-api-key');
+    if (apiKeyElement) {
+        apiKeyElement.textContent = data.active_api_key || 'N/A';
+        
+        // FIXED: Add visual indicator for error states
+        if (data.error || data.active_api_key === 'Error' || data.active_api_key === 'Network Error') {
+            apiKeyElement.className = 'text-2xl font-bold text-red-600';
+            apiKeyElement.title = data.error || 'Error loading API key info';
+        } else {
+            apiKeyElement.className = 'text-2xl font-bold text-gray-900';
+            apiKeyElement.title = '';
+        }
+    }
 
     // Update recent activity
     updateRecentActivity(data.recent_activity || []);
+    
+    // FIXED: Show error message if present
+    if (data.error) {
+        showError(`Dashboard Error: ${data.error}`);
+    } else {
+        hideError();
+    }
 }
 
 // Update recent activity section
@@ -359,14 +489,43 @@ function getTimeAgo(date) {
     return `${diffDays} days ago`;
 }
 
-function showError(message) {
+function hideError() {
     const errorDiv = document.getElementById('error-message');
-    const errorText = document.getElementById('error-text');
-    
-    if (errorDiv && errorText) {
-        errorText.textContent = message;
-        errorDiv.classList.remove('hidden');
+    if (errorDiv) {
+        errorDiv.style.display = 'none';
     }
+}
+
+function showError(message) {
+    console.error('Dashboard Error:', message);
+    
+    // Try to find error display element
+    let errorDiv = document.getElementById('error-message');
+    
+    if (!errorDiv) {
+        // Create error display if it doesn't exist
+        errorDiv = document.createElement('div');
+        errorDiv.id = 'error-message';
+        errorDiv.className = 'mb-8 bg-red-50 border border-red-200 rounded-lg p-4';
+        
+        const container = document.querySelector('.max-w-7xl') || document.querySelector('main') || document.body;
+        container.insertBefore(errorDiv, container.firstChild);
+    }
+    
+    errorDiv.innerHTML = `
+        <div class="flex items-center">
+            <span class="text-red-500 mr-2 text-lg">⚠️</span>
+            <div>
+                <h3 class="text-red-800 font-semibold">Dashboard Error</h3>
+                <p class="text-red-700 text-sm">${message}</p>
+                <button onclick="refreshDashboard()" class="mt-2 text-xs bg-red-100 text-red-700 px-3 py-1 rounded hover:bg-red-200">
+                    🔄 Retry
+                </button>
+            </div>
+        </div>
+    `;
+    
+    errorDiv.style.display = 'block';
 }
 
 function showTemporaryMessage(message, type = 'info') {
