@@ -129,6 +129,8 @@ class ApiKeyManager:
             }
         return stats
 
+api_key_manager = ApiKeyManager()
+
 # FIXED: More robust environment variable loading with multiple fallback methods
 def load_api_keys():
     """Load API keys from environment variables with multiple fallback methods"""
