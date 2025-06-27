@@ -1,9 +1,10 @@
 {
-  "functions": {
-    "main.py": {
-      "runtime": "python3.9@3.9.18"
+  "builds": [
+    {
+      "src": "main.py",
+      "use": "@vercel/python@4.3.0"
     }
-  },
+  ],
   "routes": [
     {
       "src": "/static/(.*)",
@@ -11,7 +12,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/api/main"
+      "dest": "/main.py"
     }
   ]
 }
