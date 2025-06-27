@@ -7,3 +7,5 @@ fastapi
 aiohttp
 jinja2
 redis
+python-multipart
+python-dotenv
