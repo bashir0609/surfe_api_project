@@ -143,7 +143,7 @@ async def get_dashboard_stats(api_key: str = Depends(get_api_key)):
             await surfe_client.make_request_with_rotation(
                 "POST",
                 "/v2/companies/search", # Use a known valid, lightweight endpoint
-                json_data={"filters": {}, "limit": 1} # Minimal payload
+                json_data={"filters": {"domain": {"operator": "eq", "value": "google.com"}}, "limit": 1} # Minimal payload
             )
             logger.info("Dashboard stats endpoint successfully triggered API client to use an active_api_key.")
         except Exception as api_call_e:
