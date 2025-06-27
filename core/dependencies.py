@@ -5,27 +5,17 @@ from fastapi import Header, HTTPException
 print("Loading dependencies.py") # DEBUG PRINT
 
 def get_api_key() -> str:
-    try:
-        with open("api_keys.json", "r") as f:
-            keys = json.load(f)
-            
-            # Get all surfe API keys
-            surfe_keys = [v for k, v in keys.items() if k.startswith("surfe_api_key")]
-            
-            if not surfe_keys:
-                raise HTTPException(status_code=500, detail="No Surfe API keys found in api_keys.json")
-            
-            # Check if any key is a placeholder
-            placeholder_values = ["YOUR_SURFE_API_KEY_HERE", "your_actual_surfe_api_key_here", ""]
-            valid_keys = [key for key in surfe_keys if key not in placeholder_values]
-            
-            if not valid_keys:
-                raise HTTPException(status_code=500, detail="API keys not configured properly in api_keys.json")
-            
-            # Return a random valid key for load balancing
-            return random.choice(valid_keys)
-            
-    except FileNotFoundError:
-        raise HTTPException(status_code=500, detail="api_keys.json file not found.")
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="Invalid JSON format in api_keys.json")
+    """
+    Dependency that provides an active Surfe API key.
+    It now leverages the key management logic from utils.api_client.
+    """
+    key_info = surfe_client._key_manager.get_next_available_key()
+    
+    if not key_info:
+        logger.error("No active Surfe API keys are available or all are temporarily disabled.")
+        raise HTTPException(status_code=500, detail="No active Surfe API keys available for use.")
+    
+    # Mark the key as used (this will be further managed by make_request_with_rotation)
+    # The _key_manager.get_next_available_key() already marks it as used and increments total_requests.
+    
+    return key_info.key
