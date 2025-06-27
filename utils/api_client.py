@@ -129,6 +129,7 @@ class ApiKeyManager:
             }
         return stats
 
+# FIXED: Create the api_key_manager instance BEFORE using it
 api_key_manager = ApiKeyManager()
 
 # FIXED: More robust environment variable loading with multiple fallback methods
@@ -206,9 +207,6 @@ try:
 except ImportError:
     SURFE_API_BASE_URL = "https://api.surfe.com"
 
-# Moved logger initialization below config import
-# logger = logging.getLogger(__name__) # Already initialized globally above
-
 async def make_surfe_request(
     method: str,
     endpoint: str,
@@ -281,8 +279,8 @@ async def make_surfe_request(
 class SurfeClient:
     """Enhanced Surfe API client with intelligent key rotation and health tracking"""
     
-    def __init__(self, key_manager: ApiKeyManager = api_key_manager):
-        self._key_manager = key_manager
+    def __init__(self, key_manager: ApiKeyManager = None):
+        self._key_manager = key_manager or api_key_manager
         self._last_api_key_used: Optional[str] = None
         self._request_count = 0
         
