@@ -6,3 +6,4 @@ urllib3
 fastapi
 aiohttp
 jinja2
+redis
