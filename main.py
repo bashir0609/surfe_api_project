@@ -7,6 +7,10 @@ from fastapi.responses import HTMLResponse
 from core.dependencies import get_api_key
 from api.routes import company_lookalikes, company_search, company_enrichment, people_search, people_enrichment, diagnostics, dashboard, data_quality_test
 
+print(f"DEBUG: main.py started. Current working directory: {os.getcwd()}")
+print(f"DEBUG: Value of SURFE_API_KEY_1: {os.getenv('SURFE_API_KEY_1')}")
+print(f"DEBUG: Value of KV_URL: {os.getenv('KV_URL')}")
+print(f"DEBUG: All environment variables (first 5): {list(os.environ.items())[:5]}") # This might print sensitive info, remove after debugging!
 print("Loading main.py") # DEBUG PRINT
 
 def find_free_port(start_port=8000, max_port=8100):
