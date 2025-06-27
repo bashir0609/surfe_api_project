@@ -41,5 +41,18 @@
             }
         });
     </script>
+    <script>
+    console.log('Testing function availability:');
+    console.log('createSidebar:', typeof createSidebar);
+    console.log('createDashboardPage:', typeof createDashboardPage);
+    
+    // Fallback if functions don't exist
+    if (typeof createSidebar !== 'function') {
+        document.getElementById('sidebar-container').innerHTML = '<div class="w-64 bg-white p-4"><h2>Sidebar Loading...</h2></div>';
+    }
+    if (typeof createDashboardPage !== 'function') {
+        document.getElementById('main-content').innerHTML = '<div class="p-4"><h2>Dashboard Loading...</h2></div>';
+    }
+    </script>
 </body>
 </html>
