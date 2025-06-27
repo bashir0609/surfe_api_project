@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Search - Surfe API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">Company Search</h1>
+
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <form id="api-form" class="space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Industries -->
+                    <div>
+                        <div>
+                            <label for="industries" class="block text-sm font-medium text-gray-700 mb-2">
+                                Industries <span class="text-gray-500">(select one or more)</span>
+                            </label>
+
+                            <!-- Industry Input with Dropdown -->
+                            <div class="relative">
+                                <input type="text" id="industries"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    placeholder="Type to search industries... (e.g. music, saas, fintech)"
+                                    oninput="searchIndustries(this.value)" onblur="setTimeout(() => hideResults(), 200)"
+                                    onfocus="if(this.value) searchIndustries(this.value)">
+
+                                <!-- Dropdown Results -->
+                                <div id="industry-search-results"
+                                    class="absolute top-full left-0 right-0 mt-1 max-h-60 overflow-y-auto border border-gray-200 rounded-md bg-white shadow-lg z-10 hidden">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Countries -->
+                        <div>
+                            <label for="countries" class="block text-sm font-medium text-gray-700 mb-2">
+                                Countries <span class="text-gray-500">(select countries)</span>
+                            </label>
+
+                            <!-- Country Input with Dropdown -->
+                            <div class="relative">
+                                <input type="text" id="countries"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    placeholder="Type to search countries... (e.g. united states, germany)"
+                                    oninput="searchCountries(this.value)"
+                                    onblur="setTimeout(() => hideCountryResults(), 200)"
+                                    onfocus="if(this.value) searchCountries(this.value)" value="us">
+
+                                <!-- Country Dropdown Results -->
+                                <div id="country-search-results"
+                                    class="absolute top-full left-0 right-0 mt-1 max-h-60 overflow-y-auto border border-gray-200 rounded-md bg-white shadow-lg z-10 hidden">
+                                </div>
+                            </div>
+
+                            <!-- Popular Country Buttons -->
+                            <div class="mt-2">
+                                <p class="text-xs text-gray-600 mb-2">Quick select:</p>
+                                <div class="flex flex-wrap gap-1">
+                                    <button type="button" onclick="setCountryFromList('us', '🇺🇸 United States')"
+                                        class="country-tag">🇺🇸 US</button>
+                                    <button type="button" onclick="setCountryFromList('de', '🇩🇪 Germany')"
+                                        class="country-tag">🇩🇪 DE</button>
+                                    <button type="button" onclick="setCountryFromList('fr', '🇫🇷 France')"
+                                        class="country-tag">🇫🇷 FR</button>
+                                    <button type="button" onclick="setCountryFromList('uk', '🇬🇧 United Kingdom')"
+                                        class="country-tag">🇬🇧 UK</button>
+                                    <button type="button" onclick="setCountryFromList('ca', '🇨🇦 Canada')"
+                                        class="country-tag">🇨🇦 CA</button>
+                                    <button type="button" onclick="setCountryFromList('au', '🇦🇺 Australia')"
+                                        class="country-tag">🇦🇺 AU</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Employee Count Range -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Employee Count Range</label>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <input type="number" id="employee-min" placeholder="Min employees"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <input type="number" id="employee-max" placeholder="Max employees"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="mt-2 flex flex-wrap gap-1">
+                            <button type="button" onclick="setEmployeeRange(1, 50)" class="filter-tag">Startup
+                                (1-50)</button>
+                            <button type="button" onclick="setEmployeeRange(51, 200)" class="filter-tag">Small
+                                (51-200)</button>
+                            <button type="button" onclick="setEmployeeRange(201, 1000)" class="filter-tag">Medium
+                                (201-1K)</button>
+                            <button type="button" onclick="setEmployeeRange(1001, 10000)" class="filter-tag">Large
+                                (1K-10K)</button>
+                        </div>
+                    </div>
+
+                    <!-- Revenue Range -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Revenue Range (USD)</label>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <input type="number" id="revenue-min" placeholder="Min revenue (e.g., 1000000)"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <input type="number" id="revenue-max" placeholder="Max revenue (e.g., 100000000)"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="mt-2 flex flex-wrap gap-1">
+                            <button type="button" onclick="setRevenueRange(1000000, 10000000)" class="filter-tag">$1M -
+                                $10M</button>
+                            <button type="button" onclick="setRevenueRange(10000000, 100000000)" class="filter-tag">$10M
+                                - $100M</button>
+                            <button type="button" onclick="setRevenueRange(100000000, 1000000000)"
+                                class="filter-tag">$100M - $1B</button>
+                            <button type="button" onclick="setRevenueRange(1000000000, 999999999999999)"
+                                class="filter-tag">$1B+</button>
+                        </div>
+                    </div>
+
+                    <!-- Specific Domains -->
+                    <div>
+                        <label for="domains" class="block text-sm font-medium text-gray-700 mb-2">
+                            Include Specific Domains <span class="text-gray-500">(optional, comma-separated)</span>
+                        </label>
+                        <input type="text" id="domains"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="example.com, company.com">
+                        <p class="text-xs text-gray-500 mt-1">Only search companies with these specific domains</p>
+                    </div>
+
+                    <!-- Excluded Domains -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Exclude Domains <span class="text-gray-500">(optional)</span>
+                        </label>
+
+                        <!-- Manual Input -->
+                        <div class="mb-3">
+                            <label for="domains-excluded" class="block text-xs text-gray-600 mb-1">Type domains
+                                manually:</label>
+                            <input type="text" id="domains-excluded"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                placeholder="competitor.com, spam-site.com, unwanted.co">
+                            <p class="text-xs text-gray-500 mt-1">Separate multiple domains with commas</p>
+                        </div>
+
+                        <!-- CSV Upload -->
+                        <div class="border-t border-gray-200 pt-3">
+                            <label for="exclude-csv" class="block text-xs text-gray-600 mb-2">
+                                Or upload CSV file with exclude domains:
+                            </label>
+                            <div class="flex items-center space-x-3">
+                                <input type="file" id="exclude-csv" accept=".csv,.txt"
+                                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                                    onchange="handleExcludeCSV(this)">
+                                <button type="button" onclick="testExcludeDomains()"
+                                    class="text-xs bg-blue-200 text-blue-700 px-3 py-1 rounded hover:bg-blue-300">
+                                    Test
+                                </button>
+                                <button type="button" onclick="clearExcludeDomains()"
+                                    class="text-xs bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300">
+                                    Clear All
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">
+                                CSV should have one domain per line or comma-separated. Example: domain1.com,
+                                domain2.org
+                            </p>
+
+                            <!-- Preview of loaded domains -->
+                            <div id="exclude-domains-preview" class="mt-2 hidden">
+                                <p class="text-xs font-medium text-gray-700 mb-1">Loaded exclude domains:</p>
+                                <div class="bg-red-50 border border-red-200 rounded p-2 max-h-20 overflow-y-auto">
+                                    <div id="exclude-domains-list" class="text-xs text-red-800"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Limit -->
+                    <div>
+                        <label for="limit" class="block text-sm font-medium text-gray-700 mb-2">Results Limit</label>
+                        <input type="number" id="limit" value="20" min="1" max="200"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+
+                    <!-- Page Token - Hidden field for pagination -->
+                    <input type="hidden" id="page-token" value="">
+
+                    <button type="submit"
+                        class="w-full bg-indigo-600 text-white py-3 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-200 font-medium">
+                        🔍 Search Companies
+                    </button>
+            </form>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="hidden text-center py-8">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            <p class="mt-2 text-gray-600">Searching companies...</p>
+        </div>
+
+        <!-- Results -->
+        <div id="results-container"></div>
+    </div>
+
+    <style>
+        .industry-btn {
+            @apply text-xs px-3 py-2 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition-colors cursor-pointer border-0 text-left;
+        }
+
+        .industry-small-btn {
+            @apply text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors cursor-pointer border-0 text-left;
+        }
+
+        .country-tag {
+            @apply text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full hover:bg-green-200 transition-colors cursor-pointer border-0;
+        }
+
+        .filter-tag {
+            @apply text-xs px-2 py-1 bg-purple-100 text-purple-800 rounded-full hover:bg-purple-200 transition-colors cursor-pointer border-0;
+        }
+    </style>
+
+    <script src="/static/js/shared.js"></script>
+    <script>
+        let currentResults = [];
+        let currentSearchParams = null; // Store current search for pagination
+        let nextPageToken = null; // Store next page token from API response
+        let excludeDomainsFromCSV = []; // Store domains loaded from CSV
+
+        function handleExcludeCSV(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const content = e.target.result;
+                const domains = parseCSVDomains(content);
+
+                if (domains.length > 0) {
+                    excludeDomainsFromCSV = domains;
+                    updateExcludeDomainsPreview();
+                    mergeExcludeDomains();
+
+                    // Show success message
+                    showTemporaryMessage(`✅ Loaded ${domains.length} domains from CSV`, 'success');
+                } else {
+                    showTemporaryMessage('❌ No valid domains found in CSV file', 'error');
+                }
+            };
+
+            reader.onerror = function () {
+                showTemporaryMessage('❌ Error reading CSV file', 'error');
+            };
+
+            reader.readAsText(file);
+        }
+
+        function parseCSVDomains(content) {
+            const domains = new Set();
+            
+            // Split into lines and remove empty lines
+            const lines = content.split(/[\r\n]+/).filter(line => line.trim());
+            
+            if (lines.length === 0) return [];
+            
+            // Parse the header row to find Domain column index
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+            const domainColumnIndex = headers.findIndex(h => 
+                h.includes('domain') || h === 'website' || h === 'url'
+            );
+            
+            if (domainColumnIndex === -1) {
+                console.warn('No domain column found. Headers:', headers);
+                return [];
+            }
+            
+            // Process data rows (skip header)
+            for (let i = 1; i < lines.length; i++) {
+                const columns = lines[i].split(',');
+                
+                if (columns.length > domainColumnIndex) {
+                    const domainValue = columns[domainColumnIndex].trim()
+                        .replace(/^["'`]+|["'`]+$/g, '') // Remove quotes
+                        .replace(/^https?:\/\//, '')     // Remove protocol
+                        .replace(/^www\./, '')           // Remove www
+                        .replace(/\/$/, '')              // Remove trailing slash
+                        .toLowerCase();
+                    
+                    // Validate domain
+                    if (isValidDomain(domainValue)) {
+                        domains.add(domainValue);
+                    }
+                }
+            }
+            
+            return Array.from(domains);
+        }
+
+        function isValidDomain(domain) {
+            if (!domain || domain.length < 4 || domain.length > 253) return false;
+            
+            // Must contain at least one dot
+            if (!domain.includes('.')) return false;
+            
+            // Split into parts
+            const parts = domain.split('.');
+            
+            // Must have at least 2 parts (domain + TLD)
+            if (parts.length < 2) return false;
+            
+            // No empty parts
+            if (parts.some(part => part.length === 0)) return false;
+            
+            // TLD must be at least 2 characters
+            const tld = parts[parts.length - 1];
+            if (tld.length < 2) return false;
+            
+            // Basic character validation
+            if (!/^[a-z0-9.-]+$/.test(domain)) return false;
+            
+            // Can't start or end with dash or dot
+            if (domain.startsWith('-') || domain.endsWith('-') || 
+                domain.startsWith('.') || domain.endsWith('.')) return false;
+            
+            return true;
+        }
+        function updateExcludeDomainsPreview() {
+            const previewDiv = document.getElementById('exclude-domains-preview');
+            const listDiv = document.getElementById('exclude-domains-list');
+
+            if (excludeDomainsFromCSV.length > 0) {
+                previewDiv.classList.remove('hidden');
+                listDiv.innerHTML = excludeDomainsFromCSV.slice(0, 20).join(', ') +
+                    (excludeDomainsFromCSV.length > 20 ? ` ... and ${excludeDomainsFromCSV.length - 20} more` : '');
+            } else {
+                previewDiv.classList.add('hidden');
+            }
+        }
+
+        function mergeExcludeDomains() {
+            const manualInput = document.getElementById('domains-excluded');
+            const manualDomains = manualInput.value.trim();
+
+            // Combine manual input with CSV domains
+            const allDomains = [...excludeDomainsFromCSV];
+
+            if (manualDomains) {
+                const manual = manualDomains.split(',').map(d => d.trim()).filter(d => d);
+                allDomains.push(...manual);
+            }
+
+            // Update the input field to show combined domains (first 5 as preview)
+            if (excludeDomainsFromCSV.length > 0) {
+                const preview = excludeDomainsFromCSV.slice(0, 3).join(', ');
+                const extra = excludeDomainsFromCSV.length > 3 ? ` +${excludeDomainsFromCSV.length - 3} from CSV` : '';
+                manualInput.placeholder = `${preview}${extra}${manualDomains ? ', ' + manualDomains : ''}`;
+            }
+        }
+
+        function clearExcludeDomains() {
+            excludeDomainsFromCSV = [];
+            document.getElementById('domains-excluded').value = '';
+            document.getElementById('domains-excluded').placeholder = 'competitor.com, spam-site.com, unwanted.co';
+            document.getElementById('exclude-csv').value = '';
+            updateExcludeDomainsPreview();
+            showTemporaryMessage('🗑️ Cleared all exclude domains', 'info');
+        }
+
+        function getAllExcludeDomains() {
+            const manualInput = document.getElementById('domains-excluded').value.trim();
+            const manualDomains = manualInput ? manualInput.split(',').map(d => d.trim()).filter(d => d) : [];
+
+            // Combine and deduplicate
+            const allDomains = [...new Set([...excludeDomainsFromCSV, ...manualDomains])];
+            return allDomains.filter(d => d); // Remove empty strings
+        }
+
+        function showTemporaryMessage(message, type = 'info') {
+            // Create temporary message element
+            const messageDiv = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-100 border-green-400 text-green-700' :
+                type === 'error' ? 'bg-red-100 border-red-400 text-red-700' :
+                    'bg-blue-100 border-blue-400 text-blue-700';
+
+            messageDiv.className = `fixed top-4 right-4 ${bgColor} border px-4 py-2 rounded shadow-lg z-50 text-sm`;
+            messageDiv.innerHTML = message;
+
+            document.body.appendChild(messageDiv);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.parentNode.removeChild(messageDiv);
+                }
+            }, 3000);
+        }
+
+        // Use shared data from shared.js
+        const countries = COUNTRIES;
+        const popularIndustries = SURFE_INDUSTRIES;
+
+        function setIndustry(industry) {
+            document.getElementById('industries').value = industry;
+            hideResults();
+        }
+
+        function hideResults() {
+            document.getElementById('industry-search-results').classList.add('hidden');
+        }
+
+        function setCountryFromList(code, display) {
+            document.getElementById('countries').value = code;
+            hideCountryResults();
+        }
+
+        function hideCountryResults() {
+            document.getElementById('country-search-results').classList.add('hidden');
+        }
+
+        function searchIndustries(query) {
+            const resultsDiv = document.getElementById('industry-search-results');
+
+            if (!query.trim()) {
+                hideResults();
+                return;
+            }
+
+            // Search industries using shared data
+            const matches = SURFE_INDUSTRIES.filter(industry =>
+                industry.toLowerCase().includes(query.toLowerCase())
+            ).slice(0, 8);
+
+            if (matches.length > 0) {
+                resultsDiv.innerHTML = matches.map(industry =>
+                    `<div onclick="setIndustry('${industry}')" 
+                          class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 text-sm flex justify-between items-center">
+                        <span class="font-medium text-gray-900">${industry}</span>
+                        <span class="text-indigo-600 text-xs">✓ Valid</span>
+                     </div>`
+                ).join('');
+                resultsDiv.classList.remove('hidden');
+            } else {
+                resultsDiv.innerHTML = `
+                    <div class="px-4 py-3 text-sm text-gray-500">
+                        <div class="font-medium text-gray-700">No matches for "${query}"</div>
+                        <div class="text-xs mt-1">Try: Software, Music, Gaming, Banking, FinTech</div>
+                    </div>`;
+                resultsDiv.classList.remove('hidden');
+            }
+        }
+
+        function searchCountries(query) {
+            const resultsDiv = document.getElementById('country-search-results');
+
+            if (!query.trim()) {
+                hideCountryResults();
+                return;
+            }
+
+            // Search by country name or code
+            const matches = countries.filter(country =>
+                country.name.toLowerCase().includes(query.toLowerCase()) ||
+                country.code.toLowerCase().includes(query.toLowerCase())
+            ).slice(0, 8);
+
+            if (matches.length > 0) {
+                resultsDiv.innerHTML = matches.map(country =>
+                    `<div onclick="setCountryFromList('${country.code}', '${country.flag} ${country.name}')" 
+                          class="px-4 py-3 hover:bg-green-50 cursor-pointer border-b border-gray-100 text-sm flex justify-between items-center">
+                        <span class="flex items-center">
+                            <span class="mr-2">${country.flag}</span>
+                            <span class="font-medium text-gray-900">${country.name}</span>
+                        </span>
+                        <span class="text-green-600 text-xs font-mono">${country.code}</span>
+                     </div>`
+                ).join('');
+                resultsDiv.classList.remove('hidden');
+            } else {
+                resultsDiv.innerHTML = `
+                    <div class="px-4 py-3 text-sm text-gray-500">
+                        <div class="font-medium text-gray-700">No matches for "${query}"</div>
+                        <div class="text-xs mt-1">Try: United States, Germany, France, etc.</div>
+                    </div>`;
+                resultsDiv.classList.remove('hidden');
+            }
+        }
+
+        function setRevenueRange(min, max) {
+            document.getElementById('revenue-min').value = min;
+            document.getElementById('revenue-max').value = max;
+        }
+
+        function setEmployeeRange(min, max) {
+            document.getElementById('employee-min').value = min;
+            document.getElementById('employee-max').value = max;
+        }
+
+        // Form submission
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('api-form');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const filters = {};
+
+                const industriesInput = document.getElementById('industries').value;
+                if (industriesInput) {
+                    // Single industry, not comma-separated
+                    filters.industries = [industriesInput.trim()];
+                }
+
+                const countriesInput = document.getElementById('countries').value;
+                if (countriesInput) {
+                    // Handle both single country codes and comma-separated
+                    filters.countries = countriesInput.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
+                }
+
+                const employeeMin = document.getElementById('employee-min').value;
+                const employeeMax = document.getElementById('employee-max').value;
+                if (employeeMin || employeeMax) {
+                    filters.employeeCount = {
+                        from: employeeMin ? parseInt(employeeMin) : 1,
+                        to: employeeMax ? parseInt(employeeMax) : 999999999999999
+                    };
+                }
+
+                // Revenue range
+                const revenueMin = document.getElementById('revenue-min').value;
+                const revenueMax = document.getElementById('revenue-max').value;
+                if (revenueMin || revenueMax) {
+                    filters.revenue = {
+                        from: revenueMin ? parseInt(revenueMin) : 1,
+                        to: revenueMax ? parseInt(revenueMax) : 999999999999999
+                    };
+                }
+
+                // Specific domains to include
+                const domainsInput = document.getElementById('domains').value;
+                if (domainsInput) {
+                    filters.domains = domainsInput.split(',').map(s => s.trim()).filter(s => s);
+                }
+
+                // Domains to exclude (combine manual input + CSV)
+                const allExcludeDomains = getAllExcludeDomains();
+                if (allExcludeDomains.length > 0) {
+                    // Validate exclude domains before sending
+                    console.log('Exclude domains to send:', allExcludeDomains);
+
+                    // Ensure max limit (some APIs have limits)
+                    if (allExcludeDomains.length > 1000) {
+                        alert(`Too many exclude domains (${allExcludeDomains.length}). Maximum 1000 allowed. Please reduce the list.`);
+                        return;
+                    }
+
+                    filters.domainsExcluded = allExcludeDomains;
+                }
+
+                const payload = {
+                    filters: filters,
+                    limit: parseInt(document.getElementById('limit').value) || 20,
+                    pageToken: document.getElementById('page-token').value.trim() || ""
+                };
+
+                // Store search params for pagination
+                currentSearchParams = { ...payload };
+                currentSearchParams.pageToken = ""; // Reset for future searches
+
+                console.log('Final payload to send:', JSON.stringify(payload, null, 2));
+
+                // Validate payload before sending
+                if (!payload.filters || Object.keys(payload.filters).length === 0) {
+                    alert('Please select at least one filter (industry or country)');
+                    return;
+                }
+
+                showLoading();
+                const response = await makeRequest('/api/v1/companies/search', 'POST', payload);
+                hideLoading();
+
+                if (response.success) {
+                    // Store next page token if available
+                    nextPageToken = response.data.nextPageToken || null;
+                    displayResults(response.data);
+                } else {
+                    showError(response.detail);
+                }
+            });
+        });
+
+        async function makeRequest(url, method, data) {
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                return await response.json();
+            } catch (error) {
+                return { success: false, detail: { error: error.message } };
+            }
+        }
+
+        function showLoading() {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('results-container').innerHTML = '';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.add('hidden');
+        }
+
+        function showError(error) {
+            document.getElementById('results-container').innerHTML = `
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <h3 class="text-red-800 font-semibold mb-2">Error</h3>
+                    <p class="text-red-700">${JSON.stringify(error, null, 2)}</p>
+                </div>
+            `;
+        }
+
+        function downloadCSV() {
+            if (currentResults.length === 0) {
+                alert('No data to download');
+                return;
+            }
+
+            const headers = ['Company Name', 'Domain', 'Employees', 'Industries', 'Revenue'];
+            const csvContent = [
+                headers.join(','),
+                ...currentResults.map(company => [
+                    `"${(company.name || 'N/A').replace(/"/g, '""')}"`,
+                    `"${(company.domain || 'N/A').replace(/"/g, '""')}"`,
+                    company.employeeCount || 'N/A',
+                    `"${(company.industries ? company.industries.join('; ') : 'N/A').replace(/"/g, '""')}"`,
+                    company.revenue ? `$${company.revenue.toLocaleString()}` : 'N/A'
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `companies_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+
+        function displayResults(data) {
+            const container = document.getElementById('results-container');
+
+            if (!data || !data.companies || data.companies.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center p-8 bg-gray-50 rounded-lg">
+                        <p class="text-gray-600">No companies found. Try a different industry or country.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            currentResults = data.companies;
+
+            container.innerHTML = `
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                        <h2 class="text-xl font-semibold text-gray-800">Found ${data.companies.length} Companies</h2>
+                        <div class="flex gap-2">
+                            <button onclick="downloadCSV()" 
+                                    class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-200 flex items-center">
+                                📥 Download CSV
+                            </button>
+                            ${nextPageToken ?
+                    `<button onclick="loadNextPage()" 
+                                         class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-200 flex items-center">
+                                    ➡️ Load More
+                                 </button>`
+                    : ''
+                }
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Domain</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Employees</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Industries</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${data.companies.map((company, index) => `
+                                    <tr class="${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50">
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm font-medium text-gray-900">${company.name || 'N/A'}</div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            ${company.domain ?
+                        `<a href="https://${company.domain}" target="_blank" class="text-indigo-600 hover:text-indigo-900 text-sm">${company.domain}</a>`
+                        : '<span class="text-gray-400 text-sm">N/A</span>'
+                    }
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-900">
+                                            ${company.employeeCount ? company.employeeCount.toLocaleString() : 'N/A'}
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            ${company.industries && company.industries.length > 0 ?
+                        company.industries.map(industry =>
+                            `<span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mr-1 mb-1">${industry}</span>`
+                        ).join('')
+                        : '<span class="text-gray-400">N/A</span>'
+                    }
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                        <div class="flex justify-between items-center">
+                            <p class="text-sm text-gray-600">
+                                Showing ${data.companies.length} companies total
+                            </p>
+                            ${nextPageToken ?
+                    `<p class="text-sm text-blue-600">More results available - click "Load More" to continue</p>`
+                    : `<p class="text-sm text-gray-500">No more results available</p>`
+                }
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+       
+        async function loadNextPage() {
+            if (!nextPageToken || !currentSearchParams) {
+                alert('No more pages available');
+                return;
+            }
+
+            // Use stored search params with next page token
+            const payload = { ...currentSearchParams };
+            payload.pageToken = nextPageToken;
+
+            console.log('Loading next page:', JSON.stringify(payload, null, 2));
+
+            showLoading();
+            const response = await makeRequest('/api/v1/companies/search', 'POST', payload);
+            hideLoading();
+
+            if (response.success) {
+                // Update next page token
+                nextPageToken = response.data.nextPageToken || null;
+
+                // Append new results to existing ones
+                if (response.data.companies && response.data.companies.length > 0) {
+                    currentResults = [...currentResults, ...response.data.companies];
+                    displayResults({ companies: currentResults });
+                } else {
+                    alert('No more results available');
+                }
+            } else {
+                showError(response.detail);
+            }
+        }
+        
+    </script>
+</body>
+
+</html>

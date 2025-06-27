@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>People Enrichment - Surfe API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="flex h-screen">
+        <div id="sidebar-container"></div>
+        
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="bg-white border-b border-gray-200">
+                <div class="p-4">
+                    <h1 class="text-xl font-bold text-gray-800">People Enrichment</h1>
+                </div>
+            </header>
+            
+            <main class="flex-1 p-6 md:p-8 overflow-y-auto">
+                <div id="main-content"></div>
+            </main>
+        </div>
+    </div>
+
+    <script src="/static/js/shared.js"></script>
+    <script src="/static/js/people_enrichment.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Render sidebar (from shared.js)
+            if (typeof createSidebar === 'function') {
+                document.getElementById('sidebar-container').innerHTML = createSidebar();
+            }
+            
+            // Create and render the people enrichment page content
+            if (typeof createEnrichmentPage === 'function') {
+                document.getElementById('main-content').innerHTML = createEnrichmentPage();
+            }
+
+            // Initialize enrichment functionality
+            if (typeof initEnrichment === 'function') {
+                initEnrichment();
+            }
+        });
+    </script>
+</body>
+</html>

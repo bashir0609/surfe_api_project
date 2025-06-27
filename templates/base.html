@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %} - Surfe API</title>
+    <link href="https://cdn.tailwindcss.com/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="flex h-screen">
+        <aside class="w-64 bg-white text-gray-800 flex flex-col flex-shrink-0 border-r border-gray-200">
+            <div class="p-5 border-b border-gray-200">
+                <a href="/" class="flex items-center space-x-3">
+                    <span class="text-xl font-bold tracking-tight text-gray-900">Surfe API</span>
+                </a>
+            </div>
+            
+            <nav class="mt-4 flex-1 px-2 space-y-1">
+                <a href="/" class="nav-link">
+                    <span>📊 Dashboard</span>
+                </a>
+                
+                <div class="pt-4">
+                    <h2 class="nav-section-title">Company</h2>
+                    <a href="/pages/company_search" class="nav-link">
+                        <span>🔍 Company Search</span>
+                    </a>
+                    <a href="/pages/company_lookalikes" class="nav-link">
+                        <span>🎯 Company Lookalikes</span>
+                    </a>
+                    <a href="/pages/company_enrichment" class="nav-link">
+                        <span>📈 Company Enrichment</span>
+                    </a>
+                </div>
+                
+                <div class="pt-4">
+                    <h2 class="nav-section-title">People</h2>
+                    <a href="/pages/people_search" class="nav-link">
+                        <span>👥 People Search</span>
+                    </a>
+                    <a href="/pages/people_enrichment" class="nav-link">
+                        <span>👤 People Enrichment</span>
+                    </a>
+                </div>
+                
+                <div class="pt-4">
+                    <h2 class="nav-section-title">Other</h2>
+                    <a href="/pages/diagnostics" class="nav-link">
+                        <span>🔧 API Diagnostics</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+        
+        <div class="flex-1 flex flex-col overflow-hidden">
+             <header class="bg-white border-b border-gray-200">
+                <div class="p-4">
+                    <h1 class="text-xl font-bold text-gray-800">{% block header_title %}Dashboard{% endblock %}</h1>
+                </div>
+            </header>
+            <main class="flex-1 p-6 md:p-8 overflow-y-auto">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    <script src="/static/js/shared.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav-link');
+    
+            navLinks.forEach(link => {
+                const linkPath = link.getAttribute('href');
+                if (currentPath === '/' && linkPath === '/') {
+                    link.classList.add('active');
+                }
+                else if (linkPath !== '/' && currentPath.startsWith(linkPath)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

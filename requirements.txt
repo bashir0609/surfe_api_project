@@ -1,0 +1,8 @@
+uvicorn
+pandas
+requests
+openpyxl
+urllib3
+fastapi
+aiohttp
+jinja2

@@ -1,0 +1,8 @@
+firstName,lastName,companyName,companyDomain,linkedinUrl,externalID
+John,Doe,Google,google.com,,user_001
+Jane,Smith,Microsoft,microsoft.com,,user_002
+David,Johnson,Apple,apple.com,https://www.linkedin.com/in/david-johnson-apple,user_003
+Sarah,Wilson,Meta,meta.com,,user_004
+Elon,Musk,Tesla,tesla.com,https://www.linkedin.com/in/elonmusk,user_005
+,,,,"https://www.linkedin.com/in/satyanadella",user_006
+Mark,Zuckerberg,Meta,meta.com,,user_007
