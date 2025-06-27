@@ -3,14 +3,13 @@ import socket
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from core.dependencies import get_api_key
 from api.routes import company_lookalikes, company_search, company_enrichment, people_search, people_enrichment, diagnostics, dashboard, data_quality_test
 
 print(f"DEBUG: main.py started. Current working directory: {os.getcwd()}")
 print(f"DEBUG: Value of SURFE_API_KEY_1: {os.getenv('SURFE_API_KEY_1')}")
 print(f"DEBUG: Value of KV_URL: {os.getenv('KV_URL')}")
-print(f"DEBUG: All environment variables (first 5): {list(os.environ.items())[:5]}") # This might print sensitive info, remove after debugging!
 print("Loading main.py") # DEBUG PRINT
 
 def find_free_port(start_port=8000, max_port=8100):
@@ -37,9 +36,47 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 app = FastAPI(title="FastAPI Surfe Fallback")
 
-# Use absolute paths to ensure directories are found, regardless of where the app is started from
-app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
-templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
+# IMPROVED: Mount static files with absolute paths and error handling
+static_dir = os.path.join(BASE_DIR, "static")
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+    print(f"✅ Mounted static files from: {static_dir}")
+else:
+    print(f"❌ Static directory not found: {static_dir}")
+
+# IMPROVED: Templates with absolute path
+templates_dir = os.path.join(BASE_DIR, "templates")
+if os.path.exists(templates_dir):
+    templates = Jinja2Templates(directory=templates_dir)
+    print(f"✅ Templates directory found: {templates_dir}")
+else:
+    print(f"❌ Templates directory not found: {templates_dir}")
+
+# ADDED: Explicit route for CSS file (Vercel fallback)
+@app.get("/static/css/styles.css")
+async def serve_css():
+    css_file = os.path.join(BASE_DIR, "static", "css", "styles.css")
+    if os.path.exists(css_file):
+        return FileResponse(css_file, media_type="text/css")
+    else:
+        print(f"❌ CSS file not found: {css_file}")
+        return HTMLResponse("/* CSS file not found */", status_code=404)
+
+# ADDED: Debug endpoint to check static files
+@app.get("/debug/static")
+async def debug_static():
+    static_dir = os.path.join(BASE_DIR, "static")
+    css_file = os.path.join(static_dir, "css", "styles.css")
+    
+    return {
+        "base_dir": BASE_DIR,
+        "static_dir": static_dir,
+        "static_exists": os.path.exists(static_dir),
+        "css_file": css_file,
+        "css_exists": os.path.exists(css_file),
+        "static_contents": os.listdir(static_dir) if os.path.exists(static_dir) else [],
+        "css_dir_contents": os.listdir(os.path.join(static_dir, "css")) if os.path.exists(os.path.join(static_dir, "css")) else []
+    }
 
 app.include_router(company_lookalikes.router)
 app.include_router(company_search.router)
@@ -67,7 +104,6 @@ async def show_page(request: Request, page_name: str):
 async def list_routes():
     routes = []
     for route in app.routes:
-        # Safe attribute access
         path = getattr(route, 'path', 'Unknown')
         methods = getattr(route, 'methods', set())
         routes.append({
