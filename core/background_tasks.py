@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 print("Loading background_tasks.py") # DEBUG PRINT
 
-async def run_enrichment_task(job_id: str, api_key: str, start_endpoint: str, status_endpoint_template: str, payload: dict):
+async def run_enrichment_task(job_id: str, start_endpoint: str, status_endpoint_template: str, payload: dict):
     print(f"🔥 BACKGROUND TASK STARTED: job_id={job_id}")
     print(f"🔥 BACKGROUND TASK: endpoint={start_endpoint}")
     print(f"🔥 BACKGROUND TASK: payload={payload}")
@@ -17,7 +17,6 @@ async def run_enrichment_task(job_id: str, api_key: str, start_endpoint: str, st
         job_manager.update_job_status(job_id, "running")
         
         print(f"🔥 About to call Surfe API with endpoint: {start_endpoint}")
-        print(f"🔥 API key being used: {api_key[:10]}...{api_key[-4:]}")
         
         # Submit enrichment job
         start_response = await surfe_client.make_request_with_rotation("POST", start_endpoint, json_data=payload)
