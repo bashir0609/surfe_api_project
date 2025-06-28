@@ -48,7 +48,7 @@ async def run_enrichment_task(job_id: str, api_key: str, start_endpoint: str, st
             print(f"🔥 Polling attempt {attempt + 1}/20")
             await asyncio.sleep(3)
             
-            status_response = await api_client.make_surfe_request("GET", status_endpoint, api_key)
+            status_response = await surfe_client.make_request_with_rotation("GET", status_endpoint)
             print(f"🔥 Status response attempt {attempt + 1}: {status_response}")
             
             if not status_response:
