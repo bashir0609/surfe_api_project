@@ -1,5 +1,6 @@
 # https://claude.ai/public/artifacts/818d3712-67a5-44b4-a0e3-ff5c083de1b2
 # https://claude.ai/public/artifacts/e2a873bc-34ab-4327-ba4f-d7a34deeb1db
+# https://claude.ai/public/artifacts/767ae410-a098-4f1f-bd66-b43ab24580a8
 
 # Chat Continuation - Phase 2: Route Migration & Frontend Enhancement
 
