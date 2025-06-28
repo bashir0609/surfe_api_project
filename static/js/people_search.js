@@ -802,44 +802,6 @@ function convertV2ToV1(v2Payload) {
     return v1Payload;
 }
 
-// ADD THIS FUNCTION:
-function initializeAllAutocomplete() {
-    // Industries autocomplete
-    const industryInput = document.getElementById('industries');
-    if (industryInput && typeof SURFE_INDUSTRIES !== 'undefined' && typeof searchIndustries !== 'undefined') {
-        setupAutocomplete(industryInput, SURFE_INDUSTRIES, searchIndustries);
-        console.log('✅ Industry autocomplete initialized');
-    }
-    
-    // Departments autocomplete  
-    const departmentInput = document.getElementById('people-departments');
-    if (departmentInput && typeof SURFE_DEPARTMENTS !== 'undefined' && typeof searchDepartments !== 'undefined') {
-        setupAutocomplete(departmentInput, SURFE_DEPARTMENTS, searchDepartments);
-        console.log('✅ Department autocomplete initialized');
-    }
-    
-    // Seniorities autocomplete
-    const seniorityInput = document.getElementById('people-seniorities');
-    if (seniorityInput && typeof SURFE_SENIORITIES !== 'undefined' && typeof searchSeniorities !== 'undefined') {
-        setupAutocomplete(seniorityInput, SURFE_SENIORITIES, searchSeniorities);
-        console.log('✅ Seniority autocomplete initialized');
-    }
-    
-    // ADD THESE: Company Countries autocomplete
-    const companyCountriesInput = document.getElementById('company-countries');
-    if (companyCountriesInput && typeof COUNTRIES !== 'undefined' && typeof searchCountries !== 'undefined') {
-        setupAutocomplete(companyCountriesInput, COUNTRIES, searchCountries, true);
-        console.log('✅ Company Countries autocomplete initialized');
-    }
-    
-    // ADD THESE: People Countries autocomplete
-    const peopleCountriesInput = document.getElementById('people-countries');
-    if (peopleCountriesInput && typeof COUNTRIES !== 'undefined' && typeof searchCountries !== 'undefined') {
-        setupAutocomplete(peopleCountriesInput, COUNTRIES, searchCountries, true);
-        console.log('✅ People Countries autocomplete initialized');
-    }
-}
-
 console.log('People search.js (Surfe API v2) loaded successfully');
 
 // After search completes
