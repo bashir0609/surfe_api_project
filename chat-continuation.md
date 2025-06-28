@@ -1,8 +1,6 @@
 # https://claude.ai/public/artifacts/818d3712-67a5-44b4-a0e3-ff5c083de1b2
 # https://claude.ai/public/artifacts/e2a873bc-34ab-4327-ba4f-d7a34deeb1db
 
-# Chat Continuation - Surfe API Key Rotation Overhaul
-
 # Chat Continuation - Phase 2: Hybrid Settings + Route Migration
 
 ## Current Progress Status ✅
