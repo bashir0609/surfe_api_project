@@ -307,7 +307,7 @@ function loadExample(exampleType) {
             document.getElementById('company-domains').value = example.companies.domains.join(', ');
         }
         if (example.companies.industries) {
-            document.getElementById('company-industries').value = example.companies.industries.join(', ');
+            document.getElementById('industries').value = example.companies.industries.join(', ');
         }
         if (example.companies.names) {
             document.getElementById('company-names').value = example.companies.names.join(', ');
@@ -376,7 +376,7 @@ function buildApiPayload() {
         companiesFilters.domainsExcluded = companyDomainsExcluded.map(d => d.trim());
     }
     
-    const companyIndustries = stringToArray(document.getElementById('company-industries').value);
+    const companyIndustries = stringToArray(document.getElementById('industries').value);
     if (companyIndustries.length > 0) {
         companiesFilters.industries = companyIndustries;
     }
