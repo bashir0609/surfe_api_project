@@ -38,7 +38,7 @@ async def search_people_v2(request_data: dict, api_key: str = Depends(get_api_ke
             )
         
         # Make request to Surfe API v2
-        result = await api_client.make_request_with_rotation(
+        result = await surfe_client.make_request_with_rotation(
             "POST", 
             "/v2/people/search", 
             json_data=request_data
@@ -71,7 +71,7 @@ async def search_people_v1(request: req_models.PeopleSearchRequest, api_key: str
         logger.info(f"🔄 Converting v1 to v2: {request.model_dump()} -> {v2_data}")
         
         # Call the v2 endpoint logic
-        result = await api_client.make_request_with_rotation(
+        result = await surfe_client.make_request_with_rotation(
             "POST", 
             "/v2/people/search",
             json_data=v2_data
