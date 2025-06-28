@@ -292,7 +292,7 @@ surfe-api-app/
 
 ### **🚀 Production Ready**
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/import/project?template=https://github.com/yourusername/surfe-api-app)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/import/project?template=https://github.com/bashir0609/surfe_api_project)
 
 </div>
 
@@ -372,9 +372,9 @@ Visit `/api/diagnostics/rotation-status` to see:
 
 ### **🌟 Help make this project better!**
 
-[![Contributors](https://img.shields.io/github/contributors/yourusername/repo-name?style=for-the-badge)](https://github.com/yourusername/repo-name/graphs/contributors)
-[![Issues](https://img.shields.io/github/issues/yourusername/repo-name?style=for-the-badge)](https://github.com/yourusername/repo-name/issues)
-[![Pull Requests](https://img.shields.io/github/issues-pr/yourusername/repo-name?style=for-the-badge)](https://github.com/yourusername/repo-name/pulls)
+[![Contributors](https://img.shields.io/github/contributors/bashir0609/repo-name?style=for-the-badge)](https://github.com/bashir0609/repo-name/graphs/contributors)
+[![Issues](https://img.shields.io/github/issues/bashir0609/repo-name?style=for-the-badge)](https://github.com/bashir0609/repo-name/issues)
+[![Pull Requests](https://img.shields.io/github/issues-pr/bashir0609/repo-name?style=for-the-badge)](https://github.com/bashir0609/repo-name/pulls)
 
 </div>
 
@@ -459,7 +459,7 @@ Visit `/api/diagnostics/rotation-status` to see:
 
 ### **⭐ If this project helped you, please give it a star!**
 
-[![GitHub Stars](https://img.shields.io/github/stars/yourusername/repo-name?style=social)](https://github.com/yourusername/repo-name/stargazers)
+[![GitHub Stars](https://img.shields.io/github/stars/bashir0609/repo-name?style=social)](https://github.com/bashir0609/repo-name/stargazers)
 
 **📧 Questions? Open an issue or reach out!**
 
