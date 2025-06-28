@@ -21,7 +21,10 @@ async def run_enrichment_task(job_id: str, api_key: str, start_endpoint: str, st
         
         # Submit enrichment job
         start_response = await surfe_client.make_request_with_rotation("POST", start_endpoint, json_data=payload)
+        successful_key = surfe_client.get_last_successful_key()
         print(f"🔥 Surfe API response received: {start_response}")
+
+        
         
         if not start_response:
             error_msg = "No response from Surfe API"
@@ -32,7 +35,10 @@ async def run_enrichment_task(job_id: str, api_key: str, start_endpoint: str, st
         # Get the enrichment ID
         enrichment_id = start_response.get("enrichmentID") or start_response.get("id")
         print(f"🔥 Got enrichment_id: {enrichment_id}")
-        
+
+        successful_key = surfe_client.get_last_successful_key()
+        print(f"🔥 Will use same key for polling: {successful_key[:10]}...{successful_key[-4:]}")
+
         if not enrichment_id:
             error_msg = f"Surfe API did not return enrichment ID. Response: {start_response}"
             print(f"🔥 ERROR: {error_msg}")
@@ -48,7 +54,7 @@ async def run_enrichment_task(job_id: str, api_key: str, start_endpoint: str, st
             print(f"🔥 Polling attempt {attempt + 1}/20")
             await asyncio.sleep(3)
             
-            status_response = await surfe_client.make_request_with_rotation("GET", status_endpoint)
+            status_response = await api_client.make_surfe_request("GET", status_endpoint, successful_key)
             print(f"🔥 Status response attempt {attempt + 1}: {status_response}")
             
             if not status_response:
