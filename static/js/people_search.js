@@ -863,7 +863,7 @@ function setupAutocomplete(inputElement, dataArray, searchFunction, isCountryAut
         const listDiv = document.createElement('div');
         listDiv.setAttribute('id', this.id + '-autocomplete-list');
         listDiv.setAttribute('class', 'autocomplete-items absolute z-50 bg-white border border-gray-300 rounded-md max-h-60 overflow-y-auto shadow-lg');
-        listDiv.style.width = this.offsetWidth + 'px';
+        listDiv.style.left = '0px'; // Align with the left edge of the input
         
         this.parentNode.appendChild(listDiv);
         
