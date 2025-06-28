@@ -19,38 +19,23 @@ function createCompanySearchPage() {
                 <form id="api-form" class="space-y-6">
                     <div class="grid md:grid-cols-2 gap-6">
                         <!-- Industries -->
-                        <div>
+                        <div class="autocomplete-container">
                             <label for="industries" class="block text-sm font-medium text-gray-700 mb-2">
                                 Industries <span class="text-gray-500">(select one or more)</span>
                             </label>
-                            <div class="relative">
-                                <input type="text" id="industries"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    placeholder="Type to search industries... (e.g. music, saas, fintech)"
-                                    oninput="searchIndustries(this.value)" onblur="setTimeout(() => hideResults(), 200)"
-                                    onfocus="if(this.value) searchIndustries(this.value)">
-                                <div id="industry-search-results"
-                                    class="absolute top-full left-0 right-0 mt-1 max-h-60 overflow-y-auto border border-gray-200 rounded-md bg-white shadow-lg z-10 hidden">
-                                </div>
-                            </div>
+                            <input type="text" id="industries"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                placeholder="Type to search industries... (e.g. music, saas, fintech)">
                         </div>
 
                         <!-- Countries -->
-                        <div>
+                        <div class="autocomplete-container">
                             <label for="countries" class="block text-sm font-medium text-gray-700 mb-2">
                                 Countries <span class="text-gray-500">(select countries)</span>
                             </label>
-                            <div class="relative">
-                                <input type="text" id="countries"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    placeholder="Type to search countries... (e.g. united states, germany)"
-                                    oninput="searchCountries(this.value)"
-                                    onblur="setTimeout(() => hideCountryResults(), 200)"
-                                    onfocus="if(this.value) searchCountries(this.value)" value="">
-                                <div id="country-search-results"
-                                    class="absolute top-full left-0 right-0 mt-1 max-h-60 overflow-y-auto border border-gray-200 rounded-md bg-white shadow-lg z-10 hidden">
-                                </div>
-                            </div>
+                            <input type="text" id="countries"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                placeholder="Type to search countries... (e.g. united states, germany)">
                         </div>
 
                         <!-- Employee Count Range -->
