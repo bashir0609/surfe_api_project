@@ -863,17 +863,8 @@ function setupAutocomplete(inputElement, dataArray, searchFunction, isCountryAut
         const listDiv = document.createElement('div');
         listDiv.setAttribute('id', this.id + '-autocomplete-list');
         listDiv.setAttribute('class', 'autocomplete-items absolute z-50 bg-white border border-gray-300 rounded-md max-h-60 overflow-y-auto shadow-lg');
-        
-        // Calculate position relative to the input's parent (which has 'position: relative;')
-        const inputRect = inputElement.getBoundingClientRect();
-        const parentRect = inputElement.parentNode.getBoundingClientRect();
-
-        // Set top to be just below the input, relative to the parent's top
-        listDiv.style.top = (inputRect.bottom - parentRect.top) + 'px'; 
-        // Set left to align with the input's left edge, relative to the parent's left
-        listDiv.style.left = (inputRect.left - parentRect.left) + 'px'; 
-        // Set width to match the input's width
-        listDiv.style.width = inputRect.width + 'px';
+        listDiv.style.width = this.offsetWidth + 'px'; // this refers to inputElement
+        listDiv.style.left = '0px'; // Added in last turn
         
         this.parentNode.appendChild(listDiv);
         
