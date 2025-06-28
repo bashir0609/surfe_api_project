@@ -372,9 +372,9 @@ Visit `/api/diagnostics/rotation-status` to see:
 
 ### **🌟 Help make this project better!**
 
-[![Contributors](https://img.shields.io/github/contributors/bashir0609/repo-name?style=for-the-badge)](https://github.com/bashir0609/repo-name/graphs/contributors)
-[![Issues](https://img.shields.io/github/issues/bashir0609/repo-name?style=for-the-badge)](https://github.com/bashir0609/repo-name/issues)
-[![Pull Requests](https://img.shields.io/github/issues-pr/bashir0609/repo-name?style=for-the-badge)](https://github.com/bashir0609/repo-name/pulls)
+[![Contributors](https://img.shields.io/github/contributors/bashir0609/surfe_api_project?style=for-the-badge)](https://github.com/bashir0609/surfe_api_project/graphs/contributors)
+[![Issues](https://img.shields.io/github/issues/bashir0609/surfe_api_project?style=for-the-badge)](https://github.com/bashir0609/surfe_api_project/issues)
+[![Pull Requests](https://img.shields.io/github/issues-pr/bashir0609/surfe_api_project?style=for-the-badge)](https://github.com/bashir0609/surfe_api_project/pulls)
 
 </div>
 
@@ -459,7 +459,7 @@ Visit `/api/diagnostics/rotation-status` to see:
 
 ### **⭐ If this project helped you, please give it a star!**
 
-[![GitHub Stars](https://img.shields.io/github/stars/bashir0609/repo-name?style=social)](https://github.com/bashir0609/repo-name/stargazers)
+[![GitHub Stars](https://img.shields.io/github/stars/bashir0609/surfe_api_project?style=social)](https://github.com/bashir0609/surfe_api_project/stargazers)
 
 **📧 Questions? Open an issue or reach out!**
 
