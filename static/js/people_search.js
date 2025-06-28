@@ -186,7 +186,7 @@ function createPeopleSearchPage() {
                                     type="number" 
                                     id="people-per-company" 
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" 
-                                    value="5" 
+                                    value="2" 
                                     min="1" 
                                     max="10">
                                 <p class="text-xs text-gray-500 mt-1">People per company (1-10)</p>
