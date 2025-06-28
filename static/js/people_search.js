@@ -835,20 +835,20 @@ function initializeAllAutocomplete() {
     // ADD THESE: Company Countries autocomplete
     const companyCountriesInput = document.getElementById('company-countries');
     if (companyCountriesInput && typeof COUNTRIES !== 'undefined' && typeof searchCountries !== 'undefined') {
-        setupAutocompleteCountries(companyCountriesInput, COUNTRIES, searchCountries);
+        setupAutocomplete(companyCountriesInput, COUNTRIES, searchCountries, true);
         console.log('✅ Company Countries autocomplete initialized');
     }
     
     // ADD THESE: People Countries autocomplete
     const peopleCountriesInput = document.getElementById('people-countries');
     if (peopleCountriesInput && typeof COUNTRIES !== 'undefined' && typeof searchCountries !== 'undefined') {
-        setupAutocompleteCountries(peopleCountriesInput, COUNTRIES, searchCountries);
+        setupAutocomplete(peopleCountriesInput, COUNTRIES, searchCountries, true);
         console.log('✅ People Countries autocomplete initialized');
     }
 }
 
 // ADD THIS HELPER FUNCTION:
-function setupAutocomplete(inputElement, dataArray, searchFunction) {
+function setupAutocomplete(inputElement, dataArray, searchFunction, isCountryAutocomplete = false) {
     let currentFocus = -1;
     
     inputElement.addEventListener('input', function() {
@@ -870,12 +870,20 @@ function setupAutocomplete(inputElement, dataArray, searchFunction) {
         matches.forEach((match, index) => {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'p-2 cursor-pointer hover:bg-blue-50 border-b border-gray-100';
-            itemDiv.innerHTML = match;
+            if (isCountryAutocomplete) {
+                itemDiv.innerHTML = `${match.Name} (${match.Code})`;
+            } else {
+                itemDiv.innerHTML = match;
+            }
             
             itemDiv.addEventListener('click', function() {
                 const currentValue = inputElement.value;
                 const parts = currentValue.split(',');
-                parts[parts.length - 1] = ' ' + match;
+                if (isCountryAutocomplete) {
+                    parts[parts.length - 1] = ' ' + match.Code;
+                } else {
+                    parts[parts.length - 1] = ' ' + match;
+                }
                 inputElement.value = parts.join(',');
                 closeAllLists();
             });
