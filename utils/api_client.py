@@ -424,6 +424,10 @@ class SurfeClient:
             return f"...{self._last_api_key_used[-5:]}"
         return "N/A (No API Key Used Yet)"
 
+    def get_last_successful_key(self) -> Optional[str]:
+        """Returns the actual last successfully used API key (not masked)"""
+        return self._last_api_key_used
+
     def get_stats(self) -> Dict[str, Any]:
         """Get comprehensive statistics about API usage"""
         key_stats = self._key_manager.get_key_stats()
