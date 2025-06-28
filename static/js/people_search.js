@@ -137,8 +137,7 @@ function createPeopleSearchPage() {
                                     type="text" 
                                     id="people-departments" 
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" 
-                                    placeholder="Management, Engineering, Sales" 
-                                    value="Management">
+                                    placeholder="Management, Engineering, Sales">
                                 <p class="text-xs text-gray-500 mt-1">Comma-separated departments</p>
                             </div>
                             
@@ -147,9 +146,7 @@ function createPeopleSearchPage() {
                                 <input 
                                     type="text" 
                                     id="people-job-titles" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" 
-                                    placeholder="CEO, CTO, Manager" 
-                                    value="CEO, CTO">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                 <p class="text-xs text-gray-500 mt-1">Comma-separated job titles</p>
                             </div>
                             
