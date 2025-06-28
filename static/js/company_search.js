@@ -354,39 +354,17 @@ function searchIndustries(query) {
     }
 }
 
-function searchCountries(query) {
-    const resultsDiv = document.getElementById('country-search-results');
+function searchCountries(query, limit = 10) {
+    if (!query.trim()) return [];
 
-    if (!query.trim()) {
-        hideCountryResults();
-        return;
-    }
-
-    const matches = COUNTRIES.filter(country =>
-        country.name.toLowerCase().includes(query.toLowerCase()) ||
-        country.code.toLowerCase().includes(query.toLowerCase())
-    ).slice(0, 8);
-
-    if (matches.length > 0) {
-        resultsDiv.innerHTML = matches.map(country =>
-            `<div onclick="setCountryFromList('${country.code}', '${country.flag} ${country.name}')" 
-                  class="px-4 py-3 hover:bg-green-50 cursor-pointer border-b border-gray-100 text-sm flex justify-between items-center">
-                <span class="flex items-center">
-                    <span class="mr-2">${country.flag}</span>
-                    <span class="font-medium text-gray-900">${country.name}</span>
-                </span>
-                <span class="text-green-600 text-xs font-mono">${country.code}</span>
-             </div>`
-        ).join('');
-        resultsDiv.classList.remove('hidden');
-    } else {
-        resultsDiv.innerHTML = `
-            <div class="px-4 py-3 text-sm text-gray-500">
-                <div class="font-medium text-gray-700">No matches for "${query}"</div>
-                <div class="text-xs mt-1">Try: United States, Germany, France, etc.</div>
-            </div>`;
-        resultsDiv.classList.remove('hidden');
-    }
+    return COUNTRIES.filter(country => {
+        // Handle both structures: {Name, Code} and {name, code, flag}
+        const countryName = country.Name || country.name || '';
+        const countryCode = country.Code || country.code || '';
+        
+        return countryName.toLowerCase().includes(query.toLowerCase()) ||
+               countryCode.toLowerCase().includes(query.toLowerCase());
+    }).slice(0, limit);
 }
 
 // Range setter functions
@@ -583,6 +561,9 @@ function showError(error) {
 
 // Initialize company search functionality
 function initCompanySearch() {
+    // Initialize autocomplete using the shared system
+    initializeAutocompleteForPage('company-search');
+    
     const form = document.getElementById('api-form');
     
     if (form) {
