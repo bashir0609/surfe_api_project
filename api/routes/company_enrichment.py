@@ -3,6 +3,7 @@ from uuid import uuid4
 from api.models import requests as req_models, responses as res_models
 from core.dependencies import get_api_key
 from core import job_manager, background_tasks
+from utils.api_client import surfe_client
 import logging
 import traceback
 
@@ -16,8 +17,7 @@ router = APIRouter(prefix="/api/v2/companies", tags=["Company"])
 @router.post("/enrich", response_model=res_models.JobStatusResponse)
 async def start_company_enrichment(
     request: req_models.CompanyEnrichmentRequest, 
-    background_tasks_runner: BackgroundTasks, 
-    api_key: str = Depends(get_api_key)
+    background_tasks_runner: BackgroundTasks
 ):
     """Company enrichment with debugging"""
     job_id = None
@@ -41,9 +41,8 @@ async def start_company_enrichment(
         logger.info("🔍 COMPANY STEP 5: Adding background task")
         # FIXED: Use v2 external endpoints (the current non-deprecated API)
         background_tasks_runner.add_task(
-            background_tasks.run_enrichment_task, 
-            job_id, 
-            api_key, 
+            background_tasks.run_enrichment_task_with_rotation, 
+            job_id,
             "/v2/companies/enrich",  # v2 endpoint
             "/v2/companies/enrich/{id}",  # v2 status endpoint
             payload
