@@ -649,7 +649,7 @@ function downloadPeopleCSV() {
 
 // Initialize people search functionality
 function initPeopleSearch() {
-    initializeAutocompleteForPage('people');
+    initializeAutocompleteForPage('people-search');
     const form = document.getElementById('api-form');
     
     if (form) {
