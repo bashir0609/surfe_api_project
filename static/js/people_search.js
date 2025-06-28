@@ -656,7 +656,7 @@ function downloadPeopleCSV() {
 
 // Initialize people search functionality
 function initPeopleSearch() {
-    initializeIndustryAutocomplete();
+    initializeAllAutocomplete();
     const form = document.getElementById('api-form');
     
     if (form) {
@@ -810,20 +810,26 @@ function convertV2ToV1(v2Payload) {
 }
 
 // ADD THIS FUNCTION:
-function initializeIndustryAutocomplete() {
-    const industryInput = document.getElementById('industries');
-    
-    if (!industryInput) {
-        console.warn('Industry input field not found');
-        return;
+function initializeAllAutocomplete() {
+    // Industries autocomplete (existing)
+    const industryInput = document.getElementById('industries'); // FIX: use 'industries' not 'company-industries'
+    if (industryInput && typeof SURFE_INDUSTRIES !== 'undefined') {
+        setupAutocomplete(industryInput, SURFE_INDUSTRIES, searchIndustries);
+        console.log('✅ Industry autocomplete initialized');
     }
     
-    // Create autocomplete for industries using shared.js data
-    if (typeof SURFE_INDUSTRIES !== 'undefined' && typeof searchIndustries !== 'undefined') {
-        setupAutocomplete(industryInput, SURFE_INDUSTRIES, searchIndustries);
-        console.log('✅ Industry autocomplete initialized for People Search');
-    } else {
-        console.warn('⚠️ SURFE_INDUSTRIES or searchIndustries not available from shared.js');
+    // ADD THESE: Departments autocomplete  
+    const departmentInput = document.getElementById('people-departments');
+    if (departmentInput && typeof SURFE_DEPARTMENTS !== 'undefined') {
+        setupAutocomplete(departmentInput, SURFE_DEPARTMENTS, searchDepartments);
+        console.log('✅ Department autocomplete initialized');
+    }
+    
+    // ADD THESE: Seniorities autocomplete
+    const seniorityInput = document.getElementById('people-seniorities');
+    if (seniorityInput && typeof SURFE_SENIORITIES !== 'undefined') {
+        setupAutocomplete(seniorityInput, SURFE_SENIORITIES, searchSeniorities);
+        console.log('✅ Seniority autocomplete initialized');
     }
 }
 
