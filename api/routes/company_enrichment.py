@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
 from uuid import uuid4
 from api.models import requests as req_models, responses as res_models
-from core.dependencies import get_api_key
 from core import job_manager, background_tasks
 from utils.api_client import surfe_client
 import logging
