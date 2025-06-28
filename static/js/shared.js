@@ -266,6 +266,73 @@ function setupAutocomplete(inputElement, dataArray, searchFunction, isCountryAut
     });
 }
 
+// Universal autocomplete initializer that works for any page
+function initializeAutocompleteForPage(pageType = 'auto') {
+    console.log(`🔧 Initializing autocomplete for page type: ${pageType}`);
+    
+    // Define all possible autocomplete configurations
+    const autocompleteConfigs = [
+        // Company fields
+        {
+            inputId: 'industries',
+            dataArray: SURFE_INDUSTRIES,
+            searchFunction: searchIndustries,
+            isCountry: false,
+            name: 'Company Industries'
+        },
+        {
+            inputId: 'company-countries',
+            dataArray: COUNTRIES,
+            searchFunction: searchCountries,
+            isCountry: true,
+            name: 'Company Countries'
+        },
+        {
+            inputId: 'countries',
+            dataArray: COUNTRIES,
+            searchFunction: searchCountries,
+            isCountry: true,
+            name: 'Countries'
+        },
+        
+        // People fields
+        {
+            inputId: 'people-countries',
+            dataArray: COUNTRIES,
+            searchFunction: searchCountries,
+            isCountry: true,
+            name: 'People Countries'
+        },
+        {
+            inputId: 'people-departments',
+            dataArray: SURFE_DEPARTMENTS,
+            searchFunction: searchDepartments,
+            isCountry: false,
+            name: 'People Departments'
+        },
+        {
+            inputId: 'people-seniorities',
+            dataArray: SURFE_SENIORITIES,
+            searchFunction: searchSeniorities,
+            isCountry: false,
+            name: 'People Seniorities'
+        }
+    ];
+    
+    let initializedCount = 0;
+    
+    autocompleteConfigs.forEach(config => {
+        const input = document.getElementById(config.inputId);
+        if (input && config.dataArray && config.searchFunction) {
+            setupAutocomplete(input, config.dataArray, config.searchFunction, config.isCountry);
+            console.log(`✅ ${config.name} autocomplete initialized`);
+            initializedCount++;
+        }
+    });
+    
+    console.log(`🎉 Initialized ${initializedCount} autocomplete fields for ${pageType} page`);
+}
+
 // Revenue range presets
 const REVENUE_PRESETS = [
     { label: "$1M - $10M", min: 1000000, max: 10000000 },
