@@ -147,6 +147,7 @@ function createPeopleSearchPage() {
                                     type="text" 
                                     id="people-job-titles" 
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    placeholder="CEO, CTO, CMO" 
                                 <p class="text-xs text-gray-500 mt-1">Comma-separated job titles</p>
                             </div>
                             
