@@ -803,6 +803,122 @@ function convertV2ToV1(v2Payload) {
     return v1Payload;
 }
 
+function initPeopleSearch() {
+    const form = document.getElementById('api-form');
+    
+    // ADD THIS: Initialize industry autocomplete
+    initializeIndustryAutocomplete();
+    
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            // ... rest of your existing code
+        });
+    }
+}
+
+// ADD THIS FUNCTION:
+function initializeIndustryAutocomplete() {
+    const industryInput = document.getElementById('company-industries');
+    
+    if (!industryInput) {
+        console.warn('Industry input field not found');
+        return;
+    }
+    
+    // Create autocomplete for industries using shared.js data
+    if (typeof SURFE_INDUSTRIES !== 'undefined' && typeof searchIndustries !== 'undefined') {
+        setupAutocomplete(industryInput, SURFE_INDUSTRIES, searchIndustries);
+        console.log('✅ Industry autocomplete initialized for People Search');
+    } else {
+        console.warn('⚠️ SURFE_INDUSTRIES or searchIndustries not available from shared.js');
+    }
+}
+
+// ADD THIS HELPER FUNCTION:
+function setupAutocomplete(inputElement, dataArray, searchFunction) {
+    let currentFocus = -1;
+    
+    inputElement.addEventListener('input', function() {
+        const val = this.value.split(',').pop().trim();
+        closeAllLists();
+        
+        if (!val) return false;
+        
+        const matches = searchFunction(val, 10);
+        if (matches.length === 0) return false;
+        
+        const listDiv = document.createElement('div');
+        listDiv.setAttribute('id', this.id + '-autocomplete-list');
+        listDiv.setAttribute('class', 'autocomplete-items absolute z-50 bg-white border border-gray-300 rounded-md max-h-60 overflow-y-auto shadow-lg');
+        listDiv.style.width = this.offsetWidth + 'px';
+        
+        this.parentNode.appendChild(listDiv);
+        
+        matches.forEach((match, index) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'p-2 cursor-pointer hover:bg-blue-50 border-b border-gray-100';
+            itemDiv.innerHTML = match;
+            
+            itemDiv.addEventListener('click', function() {
+                const currentValue = inputElement.value;
+                const parts = currentValue.split(',');
+                parts[parts.length - 1] = ' ' + match;
+                inputElement.value = parts.join(',');
+                closeAllLists();
+            });
+            
+            listDiv.appendChild(itemDiv);
+        });
+    });
+    
+    inputElement.addEventListener('keydown', function(e) {
+        const list = document.getElementById(this.id + '-autocomplete-list');
+        if (list) {
+            const items = list.getElementsByTagName('div');
+            if (e.keyCode === 40) { // Down arrow
+                currentFocus++;
+                addActive(items);
+            } else if (e.keyCode === 38) { // Up arrow
+                currentFocus--;
+                addActive(items);
+            } else if (e.keyCode === 13) { // Enter
+                e.preventDefault();
+                if (currentFocus > -1 && items[currentFocus]) {
+                    items[currentFocus].click();
+                }
+            }
+        }
+    });
+    
+    function addActive(items) {
+        if (!items) return false;
+        removeActive(items);
+        if (currentFocus >= items.length) currentFocus = 0;
+        if (currentFocus < 0) currentFocus = items.length - 1;
+        items[currentFocus].classList.add('bg-blue-100');
+    }
+    
+    function removeActive(items) {
+        for (let i = 0; i < items.length; i++) {
+            items[i].classList.remove('bg-blue-100');
+        }
+    }
+    
+    function closeAllLists() {
+        const lists = document.getElementsByClassName('autocomplete-items');
+        for (let i = 0; i < lists.length; i++) {
+            lists[i].parentNode.removeChild(lists[i]);
+        }
+        currentFocus = -1;
+    }
+    
+    document.addEventListener('click', function(e) {
+        if (e.target !== inputElement) {
+            closeAllLists();
+        }
+    });
+}
+
 console.log('People search.js (Surfe API v2) loaded successfully');
 
 // After search completes
