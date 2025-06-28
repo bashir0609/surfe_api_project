@@ -40,7 +40,7 @@ async def start_company_enrichment(
         logger.info("🔍 COMPANY STEP 5: Adding background task")
         # FIXED: Use v2 external endpoints (the current non-deprecated API)
         background_tasks_runner.add_task(
-            background_tasks.run_enrichment_task_with_rotation, 
+            background_tasks.run_enrichment_task, 
             job_id,
             "/v2/companies/enrich",  # v2 endpoint
             "/v2/companies/enrich/{id}",  # v2 status endpoint
