@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from api.models import requests as req_models, responses as res_models
 from core.dependencies import get_api_key
 from utils import api_client
+from utils.api_client import surfe_client
 import logging
 
 print("Loading people_search.py") # DEBUG PRINT
@@ -37,7 +38,7 @@ async def search_people_v2(request_data: dict, api_key: str = Depends(get_api_ke
             )
         
         # Make request to Surfe API v2
-        result = await api_client.make_surfe_request(
+        result = await api_client.make_request_with_rotation(
             "POST", 
             "/v2/people/search", 
             api_key, 
@@ -71,7 +72,7 @@ async def search_people_v1(request: req_models.PeopleSearchRequest, api_key: str
         logger.info(f"🔄 Converting v1 to v2: {request.model_dump()} -> {v2_data}")
         
         # Call the v2 endpoint logic
-        result = await api_client.make_surfe_request(
+        result = await api_client.make_request_with_rotation(
             "POST", 
             "/v2/people/search", 
             api_key, 
