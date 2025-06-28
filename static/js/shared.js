@@ -156,6 +156,116 @@ function searchSeniorities(query, limit = 10) {
     ).slice(0, limit);
 }
 
+// Universal autocomplete setup function
+function setupAutocomplete(inputElement, dataArray, searchFunction, isCountryAutocomplete = false) {
+    let currentFocus = -1;
+    let autocompleteList = null;
+    
+    // Ensure parent container has relative positioning
+    if (!inputElement.parentNode.classList.contains('autocomplete-container')) {
+        inputElement.parentNode.classList.add('autocomplete-container');
+    }
+    
+    inputElement.addEventListener('input', function() {
+        const val = this.value.split(',').pop().trim();
+        closeAllLists();
+        
+        if (!val) return false;
+        
+        const matches = searchFunction(val, 10);
+        if (matches.length === 0) return false;
+        
+        // Create dropdown
+        autocompleteList = document.createElement('div');
+        autocompleteList.setAttribute('id', this.id + '-autocomplete-list');
+        autocompleteList.className = 'autocomplete-dropdown';
+        
+        this.parentNode.appendChild(autocompleteList);
+        
+        matches.forEach((match, index) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'autocomplete-item';
+            
+            if (isCountryAutocomplete) {
+                itemDiv.innerHTML = `${match.Name} (${match.Code})`;
+            } else {
+                itemDiv.innerHTML = match;
+            }
+            
+            itemDiv.addEventListener('click', function() {
+                const currentValue = inputElement.value;
+                const parts = currentValue.split(',');
+                if (isCountryAutocomplete) {
+                    parts[parts.length - 1] = ' ' + match.Code;
+                } else {
+                    parts[parts.length - 1] = ' ' + match;
+                }
+                inputElement.value = parts.join(',');
+                closeAllLists();
+                inputElement.focus();
+            });
+            
+            autocompleteList.appendChild(itemDiv);
+        });
+    });
+    
+    inputElement.addEventListener('keydown', function(e) {
+        if (!autocompleteList) return;
+        const items = autocompleteList.getElementsByClassName('autocomplete-item');
+        
+        if (e.keyCode === 40) { // Down arrow
+            e.preventDefault();
+            currentFocus++;
+            setActive(items);
+        } else if (e.keyCode === 38) { // Up arrow
+            e.preventDefault();
+            currentFocus--;
+            setActive(items);
+        } else if (e.keyCode === 13) { // Enter
+            e.preventDefault();
+            if (currentFocus > -1 && items[currentFocus]) {
+                items[currentFocus].click();
+            }
+        } else if (e.keyCode === 27) { // Escape
+            closeAllLists();
+        }
+    });
+    
+    function setActive(items) {
+        if (!items) return false;
+        removeActive(items);
+        if (currentFocus >= items.length) currentFocus = 0;
+        if (currentFocus < 0) currentFocus = items.length - 1;
+        if (items[currentFocus]) {
+            items[currentFocus].classList.add('autocomplete-active');
+        }
+    }
+    
+    function removeActive(items) {
+        for (let i = 0; i < items.length; i++) {
+            items[i].classList.remove('autocomplete-active');
+        }
+    }
+    
+    function closeAllLists() {
+        const lists = document.getElementsByClassName('autocomplete-dropdown');
+        for (let i = lists.length - 1; i >= 0; i--) {
+            if (lists[i].parentNode) {
+                lists[i].parentNode.removeChild(lists[i]);
+            }
+        }
+        autocompleteList = null;
+        currentFocus = -1;
+    }
+    
+    // Close on click outside
+    document.addEventListener('click', function(e) {
+        if (!inputElement.contains(e.target) && (!autocompleteList || !autocompleteList.contains(e.target))) {
+            closeAllLists();
+        }
+    });
+}
+
 // Revenue range presets
 const REVENUE_PRESETS = [
     { label: "$1M - $10M", min: 1000000, max: 10000000 },
