@@ -55,14 +55,19 @@ function createPeopleSearchPage() {
                             </div>
                             
                             <div>
-                                <label for="company-industries" class="block text-sm font-medium text-gray-700 mb-2">Industries</label>
-                                <input 
-                                    type="text" 
-                                    id="company-industries" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" 
-                                    placeholder="Software, SaaS, CRM" 
-                                    value="Software, SaaS, Internet">
-                                <p class="text-xs text-gray-500 mt-1">Comma-separated industries</p>
+                                <label for="industries" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Industries <span class="text-gray-500">(select one or more)</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="text" id="industries"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        placeholder="Type to search industries... (e.g. music, saas, fintech)"
+                                        oninput="searchIndustries(this.value)" onblur="setTimeout(() => hideResults(), 200)"
+                                        onfocus="if(this.value) searchIndustries(this.value)">
+                                    <div id="industry-search-results"
+                                        class="absolute top-full left-0 right-0 mt-1 max-h-60 overflow-y-auto border border-gray-200 rounded-md bg-white shadow-lg z-10 hidden">
+                                    </div>
+                                </div>
                             </div>
                             
                             <div>
