@@ -24,7 +24,7 @@ function createPeopleSearchPage() {
                         <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">🏢 Company Filters</h3>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                            <div>
+                            <div class="autocomplete-container">
                                 <label for="company-countries" class="block text-sm font-medium text-gray-700 mb-2">Countries</label>
                                 <input 
                                     type="text" 
@@ -54,20 +54,13 @@ function createPeopleSearchPage() {
                                 <p class="text-xs text-gray-500 mt-1">Domains to exclude</p>
                             </div>
                             
-                            <div>
+                            <div class="autocomplete-container">
                                 <label for="industries" class="block text-sm font-medium text-gray-700 mb-2">
                                     Industries <span class="text-gray-500">(select one or more)</span>
                                 </label>
-                                <div class="relative">
-                                    <input type="text" id="industries"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                        placeholder="Type to search industries... (e.g. music, saas, fintech)"
-                                        oninput="searchIndustries(this.value)" onblur="setTimeout(() => hideResults(), 200)"
-                                        onfocus="if(this.value) searchIndustries(this.value)">
-                                    <div id="industry-search-results"
-                                        class="absolute top-full left-0 right-0 mt-1 max-h-60 overflow-y-auto border border-gray-200 rounded-md bg-white shadow-lg z-10 hidden">
-                                    </div>
-                                </div>
+                                <input type="text" id="industries"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    placeholder="Type to search industries... (e.g. music, saas, fintech)">
                             </div>
                             
                             <div>
@@ -128,7 +121,7 @@ function createPeopleSearchPage() {
                         <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">👥 People Filters</h3>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                            <div>
+                            <div class="autocomplete-container">
                                 <label for="people-countries" class="block text-sm font-medium text-gray-700 mb-2">Countries</label>
                                 <input 
                                     type="text" 
@@ -138,7 +131,7 @@ function createPeopleSearchPage() {
                                 <p class="text-xs text-gray-500 mt-1">Comma-separated country codes</p>
                             </div>
                             
-                            <div>
+                            <div class="autocomplete-container">
                                 <label for="people-departments" class="block text-sm font-medium text-gray-700 mb-2">Departments</label>
                                 <input 
                                     type="text" 
@@ -160,7 +153,7 @@ function createPeopleSearchPage() {
                                 <p class="text-xs text-gray-500 mt-1">Comma-separated job titles</p>
                             </div>
                             
-                            <div>
+                            <div class="autocomplete-container">
                                 <label for="people-seniorities" class="block text-sm font-medium text-gray-700 mb-2">Seniorities</label>
                                 <input 
                                     type="text" 
@@ -845,100 +838,6 @@ function initializeAllAutocomplete() {
         setupAutocomplete(peopleCountriesInput, COUNTRIES, searchCountries, true);
         console.log('✅ People Countries autocomplete initialized');
     }
-}
-
-// ADD THIS HELPER FUNCTION:
-function setupAutocomplete(inputElement, dataArray, searchFunction, isCountryAutocomplete = false) {
-    let currentFocus = -1;
-    
-    inputElement.addEventListener('input', function() {
-        const val = this.value.split(',').pop().trim();
-        closeAllLists();
-        
-        if (!val) return false;
-        
-        const matches = searchFunction(val, 10);
-        if (matches.length === 0) return false;
-        
-        const listDiv = document.createElement('div');
-        listDiv.setAttribute('id', this.id + '-autocomplete-list');
-        listDiv.setAttribute('class', 'autocomplete-items absolute z-50 bg-white border border-gray-300 rounded-md max-h-60 overflow-y-auto shadow-lg');
-        listDiv.style.width = this.offsetWidth + 'px'; // this refers to inputElement
-        listDiv.style.left = '0px'; // Added in last turn
-        
-        this.parentNode.appendChild(listDiv);
-        
-        matches.forEach((match, index) => {
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'p-2 cursor-pointer hover:bg-blue-50 border-b border-gray-100';
-            if (isCountryAutocomplete) {
-                itemDiv.innerHTML = `${match.Name} (${match.Code})`;
-            } else {
-                itemDiv.innerHTML = match;
-            }
-            
-            itemDiv.addEventListener('click', function() {
-                const currentValue = inputElement.value;
-                const parts = currentValue.split(',');
-                if (isCountryAutocomplete) {
-                    parts[parts.length - 1] = ' ' + match.Code;
-                } else {
-                    parts[parts.length - 1] = ' ' + match;
-                }
-                inputElement.value = parts.join(',');
-                closeAllLists();
-            });
-            
-            listDiv.appendChild(itemDiv);
-        });
-    });
-    
-    inputElement.addEventListener('keydown', function(e) {
-        const list = document.getElementById(this.id + '-autocomplete-list');
-        if (list) {
-            const items = list.getElementsByTagName('div');
-            if (e.keyCode === 40) { // Down arrow
-                currentFocus++;
-                addActive(items);
-            } else if (e.keyCode === 38) { // Up arrow
-                currentFocus--;
-                addActive(items);
-            } else if (e.keyCode === 13) { // Enter
-                e.preventDefault();
-                if (currentFocus > -1 && items[currentFocus]) {
-                    items[currentFocus].click();
-                }
-            }
-        }
-    });
-    
-    function addActive(items) {
-        if (!items) return false;
-        removeActive(items);
-        if (currentFocus >= items.length) currentFocus = 0;
-        if (currentFocus < 0) currentFocus = items.length - 1;
-        items[currentFocus].classList.add('bg-blue-100');
-    }
-    
-    function removeActive(items) {
-        for (let i = 0; i < items.length; i++) {
-            items[i].classList.remove('bg-blue-100');
-        }
-    }
-    
-    function closeAllLists() {
-        const lists = document.getElementsByClassName('autocomplete-items');
-        for (let i = 0; i < lists.length; i++) {
-            lists[i].parentNode.removeChild(lists[i]);
-        }
-        currentFocus = -1;
-    }
-    
-    document.addEventListener('click', function(e) {
-        if (e.target !== inputElement) {
-            closeAllLists();
-        }
-    });
 }
 
 console.log('People search.js (Surfe API v2) loaded successfully');
