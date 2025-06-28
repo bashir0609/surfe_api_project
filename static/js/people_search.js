@@ -656,6 +656,7 @@ function downloadPeopleCSV() {
 
 // Initialize people search functionality
 function initPeopleSearch() {
+    initializeIndustryAutocomplete();
     const form = document.getElementById('api-form');
     
     if (form) {
@@ -808,22 +809,9 @@ function convertV2ToV1(v2Payload) {
     return v1Payload;
 }
 
-function initPeopleSearch() {
-    const form = document.getElementById('api-form');
-    
-    // ADD THIS: Initialize industry autocomplete
-    initializeIndustryAutocomplete();
-    
-    if (form) {
-        form.addEventListener('submit', async (e) => {
-            // ... rest of your existing code
-        });
-    }
-}
-
 // ADD THIS FUNCTION:
 function initializeIndustryAutocomplete() {
-    const industryInput = document.getElementById('company-industries');
+    const industryInput = document.getElementById('industries');
     
     if (!industryInput) {
         console.warn('Industry input field not found');
