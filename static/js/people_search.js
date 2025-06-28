@@ -811,25 +811,39 @@ function convertV2ToV1(v2Payload) {
 
 // ADD THIS FUNCTION:
 function initializeAllAutocomplete() {
-    // Industries autocomplete (existing)
-    const industryInput = document.getElementById('industries'); // FIX: use 'industries' not 'company-industries'
-    if (industryInput && typeof SURFE_INDUSTRIES !== 'undefined') {
+    // Industries autocomplete
+    const industryInput = document.getElementById('industries');
+    if (industryInput && typeof SURFE_INDUSTRIES !== 'undefined' && typeof searchIndustries !== 'undefined') {
         setupAutocomplete(industryInput, SURFE_INDUSTRIES, searchIndustries);
         console.log('✅ Industry autocomplete initialized');
     }
     
-    // ADD THESE: Departments autocomplete  
+    // Departments autocomplete  
     const departmentInput = document.getElementById('people-departments');
-    if (departmentInput && typeof SURFE_DEPARTMENTS !== 'undefined') {
+    if (departmentInput && typeof SURFE_DEPARTMENTS !== 'undefined' && typeof searchDepartments !== 'undefined') {
         setupAutocomplete(departmentInput, SURFE_DEPARTMENTS, searchDepartments);
         console.log('✅ Department autocomplete initialized');
     }
     
-    // ADD THESE: Seniorities autocomplete
+    // Seniorities autocomplete
     const seniorityInput = document.getElementById('people-seniorities');
-    if (seniorityInput && typeof SURFE_SENIORITIES !== 'undefined') {
+    if (seniorityInput && typeof SURFE_SENIORITIES !== 'undefined' && typeof searchSeniorities !== 'undefined') {
         setupAutocomplete(seniorityInput, SURFE_SENIORITIES, searchSeniorities);
         console.log('✅ Seniority autocomplete initialized');
+    }
+    
+    // ADD THESE: Company Countries autocomplete
+    const companyCountriesInput = document.getElementById('company-countries');
+    if (companyCountriesInput && typeof COUNTRIES !== 'undefined' && typeof searchCountries !== 'undefined') {
+        setupAutocompleteCountries(companyCountriesInput, COUNTRIES, searchCountries);
+        console.log('✅ Company Countries autocomplete initialized');
+    }
+    
+    // ADD THESE: People Countries autocomplete
+    const peopleCountriesInput = document.getElementById('people-countries');
+    if (peopleCountriesInput && typeof COUNTRIES !== 'undefined' && typeof searchCountries !== 'undefined') {
+        setupAutocompleteCountries(peopleCountriesInput, COUNTRIES, searchCountries);
+        console.log('✅ People Countries autocomplete initialized');
     }
 }
 
