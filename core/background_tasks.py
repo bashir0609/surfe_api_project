@@ -1,6 +1,7 @@
 import asyncio
 from core import job_manager
 from utils import api_client
+from utils.api_client import surfe_client
 import logging
 
 logger = logging.getLogger(__name__)
@@ -19,7 +20,7 @@ async def run_enrichment_task(job_id: str, api_key: str, start_endpoint: str, st
         print(f"🔥 API key being used: {api_key[:10]}...{api_key[-4:]}")
         
         # Submit enrichment job
-        start_response = await api_client.make_surfe_request("POST", start_endpoint, api_key, json_data=payload)
+        start_response = await surfe_client.make_request_with_rotation("POST", start_endpoint, json_data=payload)
         print(f"🔥 Surfe API response received: {start_response}")
         
         if not start_response:
