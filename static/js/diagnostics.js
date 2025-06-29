@@ -83,6 +83,14 @@ function createDiagnosticsPage() {
                     </div>
                 </div>
             </div>
+            
+
+            // diagnostics.js - Add comprehensive endpoint testing
+            <button 
+                id="test-comprehensive-endpoints" 
+                class="bg-indigo-600 text-white py-3 px-4 rounded-md hover:bg-indigo-700 transition duration-200 font-medium">
+                🔬 Comprehensive API Test
+            </button>
 
             <!-- Loading and Error States -->
             <div id="loading-indicator" class="hidden text-center py-8">
@@ -102,13 +110,6 @@ function createDiagnosticsPage() {
         </div>
     `;
 }
-
-// diagnostics.js - Add comprehensive endpoint testing
-<button 
-    id="test-comprehensive-endpoints" 
-    class="bg-indigo-600 text-white py-3 px-4 rounded-md hover:bg-indigo-700 transition duration-200 font-medium">
-    🔬 Comprehensive API Test
-</button>
 
 // diagnostics.js - Add comprehensive endpoint testing handler
 document.getElementById('test-comprehensive-endpoints').addEventListener('click', async () => {
