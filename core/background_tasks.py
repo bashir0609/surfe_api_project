@@ -1,13 +1,15 @@
+# core/background_tasks.py - Updated imports
 import asyncio
 from core import job_manager
-from utils import api_client
 from utils.api_client import surfe_client
+from utils import api_client  # Need this for direct key usage in polling
 import logging
 
 logger = logging.getLogger(__name__)
 
 print("Loading background_tasks.py") # DEBUG PRINT
 
+# core/background_tasks.py - Fixed with key consistency
 async def run_enrichment_task(job_id: str, start_endpoint: str, status_endpoint_template: str, payload: dict):
     print(f"🔥 BACKGROUND TASK STARTED: job_id={job_id}")
     print(f"🔥 BACKGROUND TASK: endpoint={start_endpoint}")
@@ -18,12 +20,13 @@ async def run_enrichment_task(job_id: str, start_endpoint: str, status_endpoint_
         
         print(f"🔥 About to call Surfe API with endpoint: {start_endpoint}")
         
-        # Submit enrichment job
+        # Submit enrichment job using rotation
         start_response = await surfe_client.make_request_with_rotation("POST", start_endpoint, json_data=payload)
+        
+        # ✅ CRITICAL: Get the key that was successful for initial request
         successful_key = surfe_client.get_last_successful_key()
         print(f"🔥 Surfe API response received: {start_response}")
-
-        
+        print(f"🔥 Will use same key for polling: {successful_key[:10]}...{successful_key[-4:]}")
         
         if not start_response:
             error_msg = "No response from Surfe API"
@@ -35,9 +38,6 @@ async def run_enrichment_task(job_id: str, start_endpoint: str, status_endpoint_
         enrichment_id = start_response.get("enrichmentID") or start_response.get("id")
         print(f"🔥 Got enrichment_id: {enrichment_id}")
 
-        successful_key = surfe_client.get_last_successful_key()
-        print(f"🔥 Will use same key for polling: {successful_key[:10]}...{successful_key[-4:]}")
-
         if not enrichment_id:
             error_msg = f"Surfe API did not return enrichment ID. Response: {start_response}"
             print(f"🔥 ERROR: {error_msg}")
@@ -48,11 +48,14 @@ async def run_enrichment_task(job_id: str, start_endpoint: str, status_endpoint_
         status_endpoint = status_endpoint_template.format(id=enrichment_id)
         print(f"🔥 Will poll status at: {status_endpoint}")
         
-        # Poll for completion
+        # Poll for completion using SAME KEY for consistency
         for attempt in range(20):
             print(f"🔥 Polling attempt {attempt + 1}/20")
             await asyncio.sleep(3)
             
+            # ✅ CRITICAL: Use same key that created the job to avoid 404s
+            # We need to import api_client for direct key usage
+            from utils import api_client
             status_response = await api_client.make_surfe_request("GET", status_endpoint, successful_key)
             print(f"🔥 Status response attempt {attempt + 1}: {status_response}")
             
