@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surfe API App - Deploy Your Own</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        .landing-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .hero-section {
+            margin-bottom: 50px;
+        }
+        
+        .hero-section h1 {
+            font-size: 2.5em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .hero-section p {
+            font-size: 1.2em;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+        
+        .deploy-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: transform 0.2s ease;
+            margin: 10px;
+        }
+        
+        .deploy-button:hover {
+            transform: translateY(-2px);
+            text-decoration: none;
+            color: white;
+        }
+        
+        .demo-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background: transparent;
+            color: #667eea;
+            text-decoration: none;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            margin: 10px;
+        }
+        
+        .demo-button:hover {
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .feature-card p {
+            color: #7f8c8d;
+            line-height: 1.6;
+        }
+        
+        .steps-section {
+            background: #f8f9fa;
+            padding: 40px;
+            border-radius: 12px;
+            margin: 50px 0;
+        }
+        
+        .steps-section h2 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        
+        .steps-list {
+            text-align: left;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .step-content h4 {
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+        }
+        
+        .step-content p {
+            margin: 0;
+            color: #7f8c8d;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+        
+        .warning-box strong {
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="landing-container">
+        <div class="hero-section">
+            <h1>🚀 Surfe API Application</h1>
+            <p>Deploy your personal instance with your own Surfe API keys for secure, private access to all features.</p>
+            
+            <div class="warning-box">
+                <strong>⚠️ Demo Mode</strong>
+                This is a demonstration instance. To use the application with your own data, deploy your personal instance below.
+            </div>
+            
+            <a href="https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/surfe-api-app&env=SURFE_API_KEY_1,SURFE_API_KEY_2,SURFE_API_KEY_3,SURFE_API_KEY_4,SURFE_API_KEY_5&envDescription=Your%20Surfe%20API%20keys%20for%20accessing%20the%20Surfe%20API&envLink=https://app.surfe.com/settings/api" 
+               class="deploy-button" target="_blank">
+                Deploy Your Own Instance
+            </a>
+            
+            <a href="/dashboard" class="demo-button">
+                View Demo (Limited Functionality)
+            </a>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>Secure & Private</h3>
+                <p>Your API keys stay in your own Vercel environment. No sharing, no security risks.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Fast & Reliable</h3>
+                <p>Built-in API key rotation system handles rate limits and ensures maximum uptime.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">💰</div>
+                <h3>Cost Effective</h3>
+                <p>Use your own Surfe API quota. Free Vercel hosting for personal projects.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🛠</div>
+                <h3>Fully Featured</h3>
+                <p>Complete Surfe API integration: people search, company enrichment, and data quality tools.</p>
+            </div>
+        </div>
+        
+        <div class="steps-section">
+            <h2>Deploy in 3 Simple Steps</h2>
+            <div class="steps-list">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Get Your Surfe API Keys</h4>
+                        <p>Log in to <a href="https://app.surfe.com" target="_blank">app.surfe.com</a> → Settings → API Keys. Generate 1-5 keys for rotation.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Click Deploy Button</h4>
+                        <p>Vercel will guide you through forking the repository and entering your API keys securely.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Access Your App</h4>
+                        <p>Get your personal URL like <code>surfe-app-yourname.vercel.app</code> and start using all features immediately.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 50px;">
+            <h2>Why Deploy Your Own?</h2>
+            <div style="text-align: left; max-width: 600px; margin: 0 auto;">
+                <ul style="color: #7f8c8d; line-height: 1.8;">
+                    <li><strong>Security:</strong> Your API keys never leave your environment</li>
+                    <li><strong>Performance:</strong> No shared rate limits with other users</li>
+                    <li><strong>Customization:</strong> Modify the code for your specific needs</li>
+                    <li><strong>Reliability:</strong> Your personal instance, always available</li>
+                    <li><strong>Compliance:</strong> Meets enterprise security requirements</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

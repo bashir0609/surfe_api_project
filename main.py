@@ -3,7 +3,7 @@ import socket
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from core.dependencies import get_api_key
 from api.routes import company_lookalikes, company_search, company_enrichment, people_search, people_enrichment, diagnostics, dashboard, data_quality_test
 
@@ -87,9 +87,43 @@ app.include_router(diagnostics.router)
 app.include_router(dashboard.router)
 app.include_router(data_quality_test.router)
 
+# main.py - Updated root route with API key check
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
-    return templates.TemplateResponse("dashboard.html", {"request": request})
+    # Check if API keys are configured
+    import os
+    api_keys = [os.getenv(f"SURFE_API_KEY_{i}") for i in range(1, 6)]
+    valid_keys = [key for key in api_keys if key]
+    
+    if not valid_keys:
+        # No API keys configured - show landing page
+        return templates.TemplateResponse("index.html", {"request": request})
+    else:
+        # API keys configured - show dashboard
+        return templates.TemplateResponse("dashboard.html", {"request": request})
+    
+# main.py - Add API key check middleware for other routes
+@app.middleware("http")
+async def check_api_keys_middleware(request: Request, call_next):
+    """Redirect to landing page if no API keys configured"""
+    # Skip for static files and root route
+    if (request.url.path.startswith("/static/") or 
+        request.url.path == "/" or
+        request.url.path == "/favicon.ico"):
+        response = await call_next(request)
+        return response
+    
+    # Check if any API keys are configured
+    import os
+    api_keys = [os.getenv(f"SURFE_API_KEY_{i}") for i in range(1, 6)]
+    valid_keys = [key for key in api_keys if key]
+    
+    if not valid_keys:
+        # No API keys configured - redirect to landing page
+        return RedirectResponse(url="/", status_code=303)
+    
+    response = await call_next(request)
+    return response
 
 @app.get("/pages/{page_name}", response_class=HTMLResponse)
 async def show_page(request: Request, page_name: str):

@@ -18,5 +18,27 @@
       "src": "/(.*)",
       "dest": "/main.py"
     }
-  ]
+  ],
+  "env": {
+    "SURFE_API_KEY_1": {
+      "description": "Your primary Surfe API key (required)",
+      "value": ""
+    },
+    "SURFE_API_KEY_2": {
+      "description": "Second Surfe API key for rotation (optional but recommended)",
+      "value": ""
+    },
+    "SURFE_API_KEY_3": {
+      "description": "Third Surfe API key for rotation (optional)",
+      "value": ""
+    },
+    "SURFE_API_KEY_4": {
+      "description": "Fourth Surfe API key for rotation (optional)",
+      "value": ""
+    },
+    "SURFE_API_KEY_5": {
+      "description": "Fifth Surfe API key for rotation (optional)",
+      "value": ""
+    }
+  }
 }
