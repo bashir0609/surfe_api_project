@@ -372,12 +372,69 @@ async def test_different_endpoints():
             "https://app.surfe.com/api"
         ]
         
+        # diagnostics.py - Enhanced endpoint testing with real Surfe API endpoints
         endpoints = [
+            # Filter and Credit Endpoints (Simple GET requests)
             ("/v1/people/search/filters", "GET", None),
-            ("/v2/people/search/filters", "GET", None),
-            ("/people/search/filters", "GET", None),
-            ("/v1/companies/search", "POST", {"filters": {"countries": ["US"]}, "limit": 1}),
-            ("/v2/companies/search", "POST", {"filters": {"countries": ["US"]}, "limit": 1})
+            ("/v1/credits", "GET", None),
+            
+            # Search Endpoints (POST with filters)
+            ("/v2/people/search", "POST", {
+                "companies": {
+                    "countries": ["US"],
+                    "industries": ["Software", "SaaS"]
+                },
+                "limit": 1,
+                "people": {
+                    "departments": ["Management"],
+                    "seniorities": ["C-Level"]
+                },
+                "peoplePerCompany": 1
+            }),
+            
+            ("/v2/companies/search", "POST", {
+                "filters": {
+                    "countries": ["US"],
+                    "industries": ["Software", "SaaS"],
+                    "employeeCount": {"from": 1, "to": 1000}
+                },
+                "limit": 1
+            }),
+            
+            # Enrichment Creation Endpoints (POST)
+            ("/v2/people/enrich", "POST", {
+                "include": {
+                    "email": True,
+                    "mobile": False,
+                    "linkedInUrl": False
+                },
+                "people": [{
+                    "firstName": "Test",
+                    "lastName": "User", 
+                    "companyName": "Test Company"
+                }]
+            }),
+            
+            ("/v2/companies/enrich", "POST", {
+                "companies": [{
+                    "domain": "example.com",
+                    "externalID": "test-company"
+                }]
+            }),
+            
+            # Lookalikes Endpoint
+            ("/v1/organizations/lookalikes", "POST", {
+                "domains": ["microsoft.com"],
+                "filters": {
+                    "industries": ["Software"],
+                    "locations": ["US"]
+                },
+                "maxResults": 1
+            }),
+            
+            # Legacy/Alternative Endpoints
+            ("/v1/people/search/filters", "GET", None),
+            ("/v1/companies/search", "POST", {"filters": {"countries": ["US"]}, "limit": 1})
         ]
         
         results = {}
@@ -532,4 +589,143 @@ async def run_full_diagnosis():
         return {
             "success": False,
             "error": f"Full diagnosis failed: {str(e)}"
+        }
+
+# diagnostics.py - Categorized endpoint testing
+@router.post("/test-endpoints-comprehensive", response_model=res_models.GenericResponse)
+async def test_comprehensive_endpoints():
+    """Test all major Surfe API endpoints by category"""
+    try:
+        logger.info("🧪 Running comprehensive endpoint testing")
+        
+        stats = surfe_client.get_stats()
+        if stats["available_keys"] == 0:
+            return {
+                "success": False,
+                "error": "No API keys available for testing"
+            }
+        
+        # Categorized endpoint testing
+        endpoint_categories = {
+            "info_endpoints": [
+                ("/v1/people/search/filters", "GET", None, "Get people search filters"),
+                ("/v1/credits", "GET", None, "Check credit balance")
+            ],
+            
+            "search_endpoints": [
+                ("/v2/people/search", "POST", {
+                    "companies": {"countries": ["US"], "industries": ["Software"]},
+                    "limit": 1,
+                    "people": {"departments": ["Management"]},
+                    "peoplePerCompany": 1
+                }, "Search for people"),
+                
+                ("/v2/companies/search", "POST", {
+                    "filters": {
+                        "countries": ["US"],
+                        "industries": ["Software"],
+                        "employeeCount": {"from": 1, "to": 100}
+                    },
+                    "limit": 1
+                }, "Search for companies")
+            ],
+            
+            "enrichment_endpoints": [
+                ("/v2/people/enrich", "POST", {
+                    "include": {"email": True, "mobile": False},
+                    "people": [{
+                        "firstName": "Test",
+                        "lastName": "User",
+                        "companyName": "Test Company"
+                    }]
+                }, "Enrich people data"),
+                
+                ("/v2/companies/enrich", "POST", {
+                    "companies": [{"domain": "example.com"}]
+                }, "Enrich company data")
+            ],
+            
+            "advanced_endpoints": [
+                ("/v1/organizations/lookalikes", "POST", {
+                    "domains": ["microsoft.com"],
+                    "filters": {"industries": ["Software"]},
+                    "maxResults": 1
+                }, "Find lookalike companies")
+            ]
+        }
+        
+        results_by_category = {}
+        working_endpoints = []
+        total_tests = 0
+        
+        for category, endpoints in endpoint_categories.items():
+            category_results = {}
+            
+            for endpoint, method, payload, description in endpoints:
+                total_tests += 1
+                
+                try:
+                    if method == "GET":
+                        result = await surfe_client.make_request_with_rotation("GET", endpoint)
+                    else:
+                        result = await surfe_client.make_request_with_rotation("POST", endpoint, json_data=payload)
+                    
+                    success = "error" not in result
+                    
+                    category_results[f"{method} {endpoint}"] = {
+                        "description": description,
+                        "success": success,
+                        "status_code": 200 if success else result.get("status_code", 400),
+                        "response_preview": str(result)[:100] if success else result.get("error", "Unknown error"),
+                        "error": None if success else result.get("error", "Request failed")
+                    }
+                    
+                    if success:
+                        working_endpoints.append({
+                            "category": category,
+                            "endpoint": endpoint,
+                            "method": method,
+                            "description": description
+                        })
+                        
+                except Exception as e:
+                    category_results[f"{method} {endpoint}"] = {
+                        "description": description,
+                        "success": False,
+                        "error": str(e),
+                        "error_type": type(e).__name__
+                    }
+            
+            results_by_category[category] = category_results
+        
+        # Generate recommendations
+        recommendations = []
+        if len(working_endpoints) == 0:
+            recommendations.append("No endpoints working - check API keys and network connectivity")
+        elif len(working_endpoints) < total_tests / 2:
+            recommendations.append("Some endpoints failing - check API key permissions")
+        else:
+            recommendations.append(f"System healthy - {len(working_endpoints)}/{total_tests} endpoints working")
+        
+        return {
+            "success": True,
+            "data": {
+                "results_by_category": results_by_category,
+                "working_endpoints": working_endpoints,
+                "summary": {
+                    "total_tests": total_tests,
+                    "working_endpoints": len(working_endpoints),
+                    "success_rate": round((len(working_endpoints) / total_tests) * 100) if total_tests > 0 else 0,
+                    "categories_tested": len(endpoint_categories)
+                },
+                "recommendations": recommendations,
+                "api_key_used": surfe_client.get_last_api_key_masked()
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Comprehensive endpoint testing failed: {str(e)}")
+        return {
+            "success": False,
+            "error": f"Comprehensive endpoint testing failed: {str(e)}"
         }

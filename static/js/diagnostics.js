@@ -103,6 +103,33 @@ function createDiagnosticsPage() {
     `;
 }
 
+// diagnostics.js - Add comprehensive endpoint testing
+<button 
+    id="test-comprehensive-endpoints" 
+    class="bg-indigo-600 text-white py-3 px-4 rounded-md hover:bg-indigo-700 transition duration-200 font-medium">
+    🔬 Comprehensive API Test
+</button>
+
+// diagnostics.js - Add comprehensive endpoint testing handler
+document.getElementById('test-comprehensive-endpoints').addEventListener('click', async () => {
+    console.log('🔬 Running comprehensive API endpoint testing...');
+    showLoading();
+    
+    try {
+        const response = await makeRequest('/api/v1/diagnostics/test-endpoints-comprehensive', 'POST');
+        hideLoading();
+        
+        if (response.success) {
+            displayComprehensiveEndpointResults(response.data);
+        } else {
+            showError(response.error || 'Comprehensive endpoint testing failed');
+        }
+    } catch (error) {
+        hideLoading();
+        showError(`Comprehensive endpoint test error: ${error.message}`);
+    }
+});
+
 // Initialize enhanced diagnostics functionality
 function initDiagnostics() {
     // Full Diagnosis - Most important for troubleshooting
