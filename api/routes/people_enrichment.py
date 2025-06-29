@@ -1,65 +1,56 @@
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+# api/routes/people_enrichment.py - Cleaned up imports
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from uuid import uuid4
 from api.models import requests as req_models, responses as res_models
-from core.dependencies import get_api_key
 from core import job_manager, background_tasks
 import logging
 import traceback
-
 
 print("Loading people_enrichment.py") # DEBUG PRINT
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["People Enrichment"])
 
+# api/routes/people_enrichment.py - Replace V2 endpoint with rotation
 @router.post("/v2/people/enrich", response_model=res_models.JobStatusResponse)
 async def start_people_enrichment_v2(
     request: req_models.PeopleEnrichmentRequestV2,
-    background_tasks_runner: BackgroundTasks,
-    api_key: str = Depends(get_api_key)
+    background_tasks_runner: BackgroundTasks
 ):
-    """Step-by-step debugging version"""
+    """V2 People Enrichment with rotation - no individual API key needed"""
     
-    # Pre-declare job_id to avoid any scoping issues
     job_id = None
     
     try:
-        logger.info("🔍 STEP 1: Starting V2 endpoint")
+        logger.info("🔍 STEP 1: Starting V2 endpoint with rotation")
         
         logger.info("🔍 STEP 2: Creating job_id")
         job_id = str(uuid4())
         logger.info(f"🔍 STEP 2 SUCCESS: job_id = {job_id}")
         
-        logger.info("🔍 STEP 3: Accessing request object")
-        logger.info(f"🔍 STEP 3: Request type = {type(request)}")
-        
-        logger.info("🔍 STEP 4: Converting request to dict")
+        logger.info("🔍 STEP 3: Converting request to dict")
         payload = request.model_dump(exclude_none=True, by_alias=True)
-        logger.info(f"🔍 STEP 4 SUCCESS: Payload has {len(payload)} keys")
+        logger.info(f"🔍 STEP 3 SUCCESS: Payload has {len(payload)} keys")
         
-        logger.info("🔍 STEP 5: Calling job_manager.create_job")
+        logger.info("🔍 STEP 4: Calling job_manager.create_job")
         job_manager.create_job(job_id)
-        logger.info(f"🔍 STEP 5 SUCCESS: Job {job_id} created in job_manager")
+        logger.info(f"🔍 STEP 4 SUCCESS: Job {job_id} created in job_manager")
         
-        logger.info("🔍 STEP 6: Preparing background task")
-        logger.info(f"🔍 STEP 6: About to add task with job_id = {job_id}")
-        
-        logger.info("🔍 STEP 7: Adding background task")
+        logger.info("🔍 STEP 5: Adding background task with rotation")
         background_tasks_runner.add_task(
             background_tasks.run_enrichment_task,
             job_id,  # Pass job_id as first argument
-            api_key,
+            None,    # No individual API key - will use rotation
             "/v2/people/enrich",
             "/v2/people/enrich/{id}",
             payload
         )
-        logger.info(f"🔍 STEP 7 SUCCESS: Background task added for job {job_id}")
+        logger.info(f"🔍 STEP 5 SUCCESS: Background task added for job {job_id}")
         
-        logger.info("🔍 STEP 8: Creating response")
+        logger.info("🔍 STEP 6: Creating response")
         response = {"job_id": job_id, "status": "pending"}
-        logger.info(f"🔍 STEP 8 SUCCESS: Response = {response}")
+        logger.info(f"🔍 STEP 6 SUCCESS: Response = {response}")
         
-        logger.info("🔍 STEP 9: Returning response")
         return response
         
     except Exception as e:
@@ -68,7 +59,6 @@ async def start_people_enrichment_v2(
         logger.error(f"🚨 ERROR type: {type(e).__name__}")
         logger.error(f"🚨 FULL TRACEBACK:\n{traceback.format_exc()}")
         
-        # Return a detailed error response
         raise HTTPException(
             status_code=500, 
             detail={
@@ -78,19 +68,19 @@ async def start_people_enrichment_v2(
                 "traceback": traceback.format_exc()
             }
         )
-
+    
+# api/routes/people_enrichment.py - Replace V1 endpoint with rotation
 @router.post("/v1/people/enrich", response_model=res_models.JobStatusResponse)
 async def start_people_enrichment_v1(
     request: req_models.PeopleEnrichmentRequestV1,
-    background_tasks_runner: BackgroundTasks,
-    api_key: str = Depends(get_api_key)
+    background_tasks_runner: BackgroundTasks
 ):
-    """V1 debugging version"""
+    """V1 People Enrichment with rotation - no individual API key needed"""
     
     job_id = None
     
     try:
-        logger.info("🔍 V1 STEP 1: Starting V1 endpoint")
+        logger.info("🔍 V1 STEP 1: Starting V1 endpoint with rotation")
         
         logger.info("🔍 V1 STEP 2: Creating job_id")
         job_id = str(uuid4())
@@ -133,11 +123,11 @@ async def start_people_enrichment_v1(
         job_manager.create_job(job_id)
         logger.info(f"🔍 V1 STEP 4 SUCCESS: Job {job_id} created")
         
-        logger.info("🔍 V1 STEP 5: Adding background task")
+        logger.info("🔍 V1 STEP 5: Adding background task with rotation")
         background_tasks_runner.add_task(
             background_tasks.run_enrichment_task,
             job_id,
-            api_key,
+            None,    # No individual API key - will use rotation
             "/v2/people/enrich",
             "/v2/people/enrich/{id}",
             payload
