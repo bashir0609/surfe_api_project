@@ -111,6 +111,61 @@ function createDiagnosticsPage() {
     `;
 }
 
+// Enhanced loading function that properly clears previous results
+function showDiagnosticsLoading() {
+    // Clear results first
+    const resultsContainer = document.getElementById('results-container');
+    if (resultsContainer) {
+        resultsContainer.innerHTML = '';
+    }
+    
+    // Hide any error messages
+    const errorMessage = document.getElementById('error-message');
+    if (errorMessage) {
+        errorMessage.classList.add('hidden');
+    }
+    
+    // Show loading indicator
+    const loadingIndicator = document.getElementById('loading-indicator');
+    if (loadingIndicator) {
+        loadingIndicator.classList.remove('hidden');
+    }
+    
+    console.log('🔄 Loading started - previous results cleared');
+}
+
+// Enhanced hide loading function
+function hideDiagnosticsLoading() {
+    const loadingIndicator = document.getElementById('loading-indicator');
+    if (loadingIndicator) {
+        loadingIndicator.classList.add('hidden');
+    }
+    console.log('✅ Loading finished');
+}
+
+// Enhanced error display function
+function showDiagnosticsError(message) {
+    // First hide loading
+    hideDiagnosticsLoading();
+    
+    // Clear results container
+    const resultsContainer = document.getElementById('results-container');
+    if (resultsContainer) {
+        resultsContainer.innerHTML = '';
+    }
+    
+    // Show error
+    const errorDiv = document.getElementById('error-message');
+    const errorText = document.getElementById('error-text');
+    
+    if (errorDiv && errorText) {
+        errorText.textContent = typeof message === 'string' ? message : JSON.stringify(message, null, 2);
+        errorDiv.classList.remove('hidden');
+    }
+    
+    console.error('❌ Error displayed:', message);
+}
+
 // Initialize enhanced diagnostics functionality
 function initDiagnostics() {
     // Full Diagnosis - Most important for troubleshooting
@@ -118,20 +173,19 @@ function initDiagnostics() {
     if (fullDiagButton) {
         fullDiagButton.addEventListener('click', async () => {
             console.log('🚨 Running full system diagnosis...');
-            showLoading();
+            showDiagnosticsLoading(); // Use enhanced loading
             
             try {
                 const response = await makeRequest('/api/v1/diagnostics/full-diagnosis', 'GET');
-                hideLoading();
+                hideDiagnosticsLoading(); // Use enhanced hide
                 
                 if (response.success) {
                     displayFullDiagnosisResults(response.data);
                 } else {
-                    showError(response.error || 'Full diagnosis failed');
+                    showDiagnosticsError(response.error || 'Full diagnosis failed');
                 }
             } catch (error) {
-                hideLoading();
-                showError(`Full diagnosis error: ${error.message}`);
+                showDiagnosticsError(`Full diagnosis error: ${error.message}`);
             }
         });
     }
@@ -141,34 +195,34 @@ function initDiagnostics() {
     if (connectivityButton) {
         connectivityButton.addEventListener('click', async () => {
             console.log('🌐 Testing network connectivity...');
-            showLoading();
+            showDiagnosticsLoading();
             
             try {
                 const response = await makeRequest('/api/v1/diagnostics/connectivity', 'GET');
-                hideLoading();
+                hideDiagnosticsLoading();
                 
                 if (response.success) {
                     displayConnectivityResults(response.data);
                 } else {
-                    showError(response.error || 'Connectivity test failed');
+                    showDiagnosticsError(response.error || 'Connectivity test failed');
                 }
             } catch (error) {
-                hideLoading();
-                showError(`Connectivity test error: ${error.message}`);
+                showDiagnosticsError(`Connectivity test error: ${error.message}`);
             }
         });
     }
+
 
     // API Key Test
     const apiKeyButton = document.getElementById('test-api-key');
     if (apiKeyButton) {
         apiKeyButton.addEventListener('click', async () => {
             console.log('🔑 Testing API key with rotation...');
-            showLoading();
+            showDiagnosticsLoading();
             
             try {
                 const response = await makeRequest('/api/v1/diagnostics/api-key-test', 'GET');
-                hideLoading();
+                hideDiagnosticsLoading();
                 
                 if (response.success) {
                     displayApiKeyResults(response.data);
@@ -179,7 +233,6 @@ function initDiagnostics() {
                     });
                 }
             } catch (error) {
-                hideLoading();
                 displayApiKeyResults({
                     valid: false,
                     error: `API key test error: ${error.message}`
@@ -188,71 +241,71 @@ function initDiagnostics() {
         });
     }
 
+
     // API Statistics
     const apiStatsButton = document.getElementById('get-api-stats');
     if (apiStatsButton) {
         apiStatsButton.addEventListener('click', async () => {
             console.log('📊 Getting API statistics...');
-            showLoading();
+            showDiagnosticsLoading();
             
             try {
                 const response = await makeRequest('/api/v1/diagnostics/api-stats', 'GET');
-                hideLoading();
+                hideDiagnosticsLoading();
                 
                 if (response.success) {
                     displayApiStatsResults(response.data);
                 } else {
-                    showError(response.error || 'Failed to get API statistics');
+                    showDiagnosticsError(response.error || 'Failed to get API statistics');
                 }
             } catch (error) {
-                hideLoading();
-                showError(`API stats error: ${error.message}`);
+                showDiagnosticsError(`API stats error: ${error.message}`);
             }
         });
     }
+
 
     // Get Available Filters (Original functionality)
     const filtersButton = document.getElementById('run-diagnostics');
     if (filtersButton) {
         filtersButton.addEventListener('click', async () => {
             console.log('🔍 Getting available filters...');
-            showLoading();
+            showDiagnosticsLoading();
             
             try {
                 const response = await makeRequest('/api/v1/diagnostics/filters', 'GET');
-                hideLoading();
+                hideDiagnosticsLoading();
                 
                 if (response.success) {
                     displayFiltersResults(response.data);
                 } else {
-                    showError(response.error || 'Failed to get filters');
+                    showDiagnosticsError(response.error || 'Failed to get filters');
                 }
             } catch (error) {
-                hideLoading();
-                showError(`Error getting filters: ${error.message}`);
+                showDiagnosticsError(`Error getting filters: ${error.message}`);
             }
         });
     }
+
 
     // Test Different Endpoints
     const endpointsButton = document.getElementById('test-endpoints');
     if (endpointsButton) {
         endpointsButton.addEventListener('click', async () => {
             console.log('🧪 Testing different endpoints...');
-            showLoading();
+            showDiagnosticsLoading();
             
             try {
                 const response = await makeRequest('/api/v1/diagnostics/test-endpoints', 'POST');
-                hideLoading();
+                hideDiagnosticsLoading();
                 
                 if (response.success) {
                     displayEndpointTestResults(response.data);
                 } else {
-                    showError(response.error || 'Endpoint testing failed');
+                    showDiagnosticsError(response.error || 'Endpoint testing failed');
                 }
             } catch (error) {
-                hideLoading();
-                showError(`Endpoint test error: ${error.message}`);
+                showDiagnosticsError(`Endpoint test error: ${error.message}`);
             }
         });
     }
@@ -262,23 +315,23 @@ function initDiagnostics() {
     if (comprehensiveButton) {
         comprehensiveButton.addEventListener('click', async () => {
             console.log('🔬 Running comprehensive API endpoint testing...');
-            showLoading();
+            showDiagnosticsLoading();
             
             try {
                 const response = await makeRequest('/api/v1/diagnostics/test-endpoints-comprehensive', 'POST');
-                hideLoading();
+                hideDiagnosticsLoading();
                 
                 if (response.success) {
                     displayComprehensiveEndpointResults(response.data);
                 } else {
-                    showError(response.error || 'Comprehensive endpoint testing failed');
+                    showDiagnosticsError(response.error || 'Comprehensive endpoint testing failed');
                 }
             } catch (error) {
-                hideLoading();
-                showError(`Comprehensive endpoint test error: ${error.message}`);
+                showDiagnosticsError(`Comprehensive endpoint test error: ${error.message}`);
             }
         });
     }
+
 
     // Reset API Keys
     const resetButton = document.getElementById('reset-keys');
@@ -289,20 +342,19 @@ function initDiagnostics() {
             }
             
             console.log('🔄 Resetting API key cooldowns...');
-            showLoading();
+            showDiagnosticsLoading();
             
             try {
                 const response = await makeRequest('/api/v1/diagnostics/reset-keys', 'POST');
-                hideLoading();
+                hideDiagnosticsLoading();
                 
                 if (response.success) {
                     displayResetResults(response.data);
                 } else {
-                    showError(response.error || 'Failed to reset API keys');
+                    showDiagnosticsError(response.error || 'Failed to reset API keys');
                 }
             } catch (error) {
-                hideLoading();
-                showError(`Reset keys error: ${error.message}`);
+                showDiagnosticsError(`Reset keys error: ${error.message}`);
             }
         });
     }
