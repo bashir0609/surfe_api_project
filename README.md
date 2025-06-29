@@ -200,12 +200,18 @@ surfe-api-app/
 ├── 🚀 api/
 │   ├── routes/
 │   │   ├── 🏢 company_search.py      # Company operations
-│   │   ├── 👥 people_search.py       # People operations  
 │   │   ├── 📈 company_enrichment.py  # Background enrichment
+│   │   ├── 📈 company_lookalikes.py  
+│   │   ├── 👥 people_search.py       # People operations  
 │   │   ├── 👤 people_enrichment.py   # Profile enhancement
 │   │   ├── 📊 diagnostics.py         # Health monitoring
+│   │   ├── 📊 data_quality_test.py
 │   │   └── 🏠 dashboard.py           # Main dashboard
-│   └── 📋 models/
+│   └── 📋 models/  
+│       ├── 📊 requests.py         # Health monitoring
+│       └── 🏠 response.py   
+├── ⚙️ config/
+│   └── 🔄 config.py 
 ├── ⚙️ core/
 │   ├── 🔄 background_tasks.py        # Async job processing
 │   ├── 📝 job_manager.py             # Status management
@@ -213,10 +219,30 @@ surfe-api-app/
 ├── 🛠 utils/
 │   └── 🔄 api_client.py              # Smart rotation system
 ├── 🎨 static/
-│   ├── js/ (Universal autocomplete)
-│   └── css/ (Modern styling)
+│   ├── js/ 
+│   │   ├── 🏢 company_search.js      
+│   │   ├── 📈 company_enrichment.js  
+│   │   ├── 📈 company_lookalikes.js  
+│   │   ├── 👥 people_search.js         
+│   │   ├── 👤 people_enrichment.js   
+│   │   ├── 📊 diagnostics.js        
+│   │   ├── 📊 dashboard.js      
+│   │   └── 🏠 shared.js              #(Universal autocomplete)  
+│   └── css/
+│       └── 🏠 style.css              #(Modern styling)  
 ├── 📄 templates/ (HTML pages)
+│   ├── 🏢 company_search.html    
+│   ├── 📈 company_enrichment.html
+│   ├── 📈 company_lookalikes.html  
+│   ├── 👥 people_search.html      
+│   ├── 👤 people_enrichment.html
+│   ├── 📊 diagnostics.html
+│   ├── 📊 data_quality_test.html
+│   └── 🏠 dashboard.html
 └── 🚀 main.py (FastAPI app)
+└── 🚀 dashboard_stats.json
+└── 🚀 debug_imports.py
+└── 🚀 clean.py
 ```
 
 </details>
