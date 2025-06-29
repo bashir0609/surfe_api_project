@@ -84,7 +84,8 @@ function createDashboardPage() {
                     </div>
                 </div>
             </div>
-
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <div class="flex items-center">
                         <div class="p-3 rounded-full bg-purple-100 text-purple-600">
@@ -112,7 +113,8 @@ function createDashboardPage() {
                         </div>
                     </div>
                 </div>
-            </div> <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            </div> 
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
                 <div class="flex items-center mb-4">
                     <span class="text-xl mr-2">🔍</span>
                     <h2 class="text-xl font-semibold text-gray-900">Quick Company Search</h2>
