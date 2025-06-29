@@ -504,7 +504,7 @@ function displayComprehensiveEndpointResults(data) {
     html += '</div></div>';
     container.innerHTML = html;
     console.log('✅ Comprehensive test results displayed successfully');
-
+}
 
 // Display full diagnosis results with comprehensive information
 function displayFullDiagnosisResults(data) {
