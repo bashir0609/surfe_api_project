@@ -333,14 +333,23 @@ function initDiagnostics() {
             
             try {
                 const response = await makeRequest('/api/v1/diagnostics/test-endpoints-comprehensive', 'POST');
+                console.log('🔍 Comprehensive test response:', response); // Debug log
+                
                 hideDiagnosticsLoading();
                 
-                if (response.success) {
+                // Check response structure more carefully
+                if (response && response.success === true) {
+                    console.log('✅ Calling displayComprehensiveEndpointResults with:', response.data);
                     displayComprehensiveEndpointResults(response.data);
+                } else if (response && response.success === false) {
+                    console.log('❌ API returned success=false:', response);
+                    showDiagnosticsError(response.error || response.detail?.error || 'Comprehensive endpoint testing failed');
                 } else {
-                    showDiagnosticsError(response.error || 'Comprehensive endpoint testing failed');
+                    console.log('❓ Unexpected response structure:', response);
+                    showDiagnosticsError('Unexpected response format from comprehensive endpoint test');
                 }
             } catch (error) {
+                console.error('💥 Comprehensive test exception:', error);
                 showDiagnosticsError(`Comprehensive endpoint test error: ${error.message}`);
             }
         });
@@ -348,6 +357,7 @@ function initDiagnostics() {
     } else {
         console.warn('❌ Comprehensive API Test button NOT FOUND - check HTML template!');
     }
+
 
     // Reset API Keys
     const resetButton = document.getElementById('reset-keys');
@@ -383,7 +393,13 @@ function initDiagnostics() {
 
 // Display comprehensive endpoint test results
 function displayComprehensiveEndpointResults(data) {
+    console.log('🎯 displayComprehensiveEndpointResults called with:', data);
+    
     const container = document.getElementById('results-container');
+    if (!container) {
+        console.error('❌ Results container not found!');
+        return;
+    }
     
     let html = `
         <div class="bg-white rounded-lg shadow-md overflow-hidden">
@@ -394,13 +410,21 @@ function displayComprehensiveEndpointResults(data) {
             <div class="p-6">
     `;
     
+    // Debug: Show what data we received
+    html += `
+        <div class="mb-4 p-3 bg-gray-100 border rounded-lg">
+            <h4 class="font-semibold text-gray-700 mb-2">🔍 Raw Response Data:</h4>
+            <pre class="text-xs text-gray-600 overflow-x-auto">${JSON.stringify(data, null, 2)}</pre>
+        </div>
+    `;
+    
     // Check if we have meaningful data structure
     if (data && typeof data === 'object') {
         // Display summary if available
         if (data.summary) {
             html += `
                 <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h3 class="text-blue-800 font-semibold mb-2">Test Summary</h3>
+                    <h3 class="text-blue-800 font-semibold mb-2">📊 Test Summary</h3>
                     <div class="text-blue-700 text-sm space-y-1">
             `;
             
@@ -460,29 +484,27 @@ function displayComprehensiveEndpointResults(data) {
             html += '</div></div>';
         }
         
-        // Display raw data if no structured format
-        if (!data.summary && !data.working_endpoints && !data.failed_endpoints) {
-            html += `
-                <div class="space-y-4">
-                    <h3 class="font-semibold text-gray-900">Raw Results</h3>
-                    <div class="bg-gray-50 border rounded-lg p-4">
-                        <pre class="text-sm text-gray-700 whitespace-pre-wrap overflow-x-auto">${JSON.stringify(data, null, 2)}</pre>
-                    </div>
-                </div>
-            `;
-        }
+        // Always show success message since we got here
+        html += `
+            <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <h4 class="text-green-800 font-semibold">✅ Test Completed Successfully</h4>
+                <p class="text-green-700 text-sm mt-1">Comprehensive endpoint testing has been completed.</p>
+            </div>
+        `;
+        
     } else {
         html += `
             <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p class="text-yellow-800">Comprehensive test completed, but no detailed results were returned.</p>
-                <p class="text-yellow-700 text-sm mt-1">This may indicate that the endpoint is not yet fully implemented.</p>
+                <p class="text-yellow-800">Comprehensive test completed, but received unexpected data format.</p>
+                <p class="text-yellow-700 text-sm mt-1">Expected an object but received: ${typeof data}</p>
             </div>
         `;
     }
     
     html += '</div></div>';
     container.innerHTML = html;
-}
+    console.log('✅ Comprehensive test results displayed successfully');
+
 
 // Display full diagnosis results with comprehensive information
 function displayFullDiagnosisResults(data) {
