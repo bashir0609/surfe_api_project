@@ -155,6 +155,13 @@ async def get_dashboard_stats(api_key: str = Depends(get_api_key)):
         return {
             "success": True,
             "data": {
+                # Option A: Search & Enrichment Activities
+                "company_searches": stats.get("company_searches", 0),
+                "people_searches": stats.get("people_searches", 0),
+                "company_enrichments": stats.get("company_enrichments", 0),
+                "people_enrichments": stats.get("people_enrichments", 0),
+                
+                # Additional info
                 "companies_found": stats.get("companies_found", 0),
                 "people_enriched": stats.get("people_enriched", 0),
                 "success_rate": success_rate,
@@ -165,6 +172,7 @@ async def get_dashboard_stats(api_key: str = Depends(get_api_key)):
                 "active_api_key": active_api_key
             }
         }
+
 
     except Exception as e:
         logger.error(f"Error getting dashboard stats: {e}")
