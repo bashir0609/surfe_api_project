@@ -183,32 +183,36 @@ async def get_dashboard_stats(api_key: str = Depends(get_api_key)):
             }
         }
 
+# dashboard.py - Updated for Option A activities without API key dependency
 @router.post("/dashboard/activity")
-async def log_activity(
-    activity_data: dict,
-    api_key: str = Depends(get_api_key)
-):
+async def log_activity(activity_data: dict):
     """
-    Logs an activity and updates dashboard statistics in Vercel KV.
+    Logs an activity and updates dashboard statistics for Option A activities.
+    No API key needed - uses rotation system automatically.
     """
     try:
         activity_type = activity_data.get("activity_type", "")
         description = activity_data.get("description", "")
-        count = activity_data.get("count", 0)
+        count = activity_data.get("count", 1)
         
         stats = load_stats() # Load current stats from KV
         
-        # Update counters based on activity type
+        # Update counters for Option A: Search & Enrichment Activities
         if activity_type == "company_search":
-            stats["companies_found"] = stats.get("companies_found", 0) + count
-            stats["searches_performed"] = stats.get("searches_performed", 0) + 1
+            stats["company_searches"] = stats.get("company_searches", 0) + 1
+            stats["companies_found"] = stats.get("companies_found", 0) + count  # Keep for backward compatibility
             
         elif activity_type == "people_search":
-            stats["searches_performed"] = stats.get("searches_performed", 0) + 1
+            stats["people_searches"] = stats.get("people_searches", 0) + 1
+            
+        elif activity_type == "company_enrichment":
+            stats["company_enrichments"] = stats.get("company_enrichments", 0) + 1
             
         elif activity_type == "people_enrichment":
-            stats["people_enriched"] = stats.get("people_enriched", 0) + count
+            stats["people_enrichments"] = stats.get("people_enrichments", 0) + 1
+            stats["people_enriched"] = stats.get("people_enriched", 0) + count  # Keep for backward compatibility
             
+        # Keep existing job tracking for other systems
         elif activity_type == "job_completed":
             stats["total_jobs"] = stats.get("total_jobs", 0) + 1
             stats["successful_jobs"] = stats.get("successful_jobs", 0) + 1

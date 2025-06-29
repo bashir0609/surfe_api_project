@@ -473,4 +473,5 @@ async function logActivity(activityType, description, count = 1) {
         console.warn('Error logging dashboard activity:', error);
     }
 }
+
 console.log('Shared.js loaded successfully');
