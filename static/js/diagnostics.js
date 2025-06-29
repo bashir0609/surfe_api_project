@@ -111,7 +111,7 @@ function createDiagnosticsPage() {
     `;
 }
 
-// Enhanced loading function that properly clears previous results
+// Add these enhanced utility functions at the top of your diagnostics.js file
 function showDiagnosticsLoading() {
     // Clear results first
     const resultsContainer = document.getElementById('results-container');
@@ -134,7 +134,6 @@ function showDiagnosticsLoading() {
     console.log('🔄 Loading started - previous results cleared');
 }
 
-// Enhanced hide loading function
 function hideDiagnosticsLoading() {
     const loadingIndicator = document.getElementById('loading-indicator');
     if (loadingIndicator) {
@@ -143,7 +142,6 @@ function hideDiagnosticsLoading() {
     console.log('✅ Loading finished');
 }
 
-// Enhanced error display function
 function showDiagnosticsError(message) {
     // First hide loading
     hideDiagnosticsLoading();
@@ -166,18 +164,20 @@ function showDiagnosticsError(message) {
     console.error('❌ Error displayed:', message);
 }
 
-// Initialize enhanced diagnostics functionality
+// REPLACE your entire initDiagnostics() function with this:
 function initDiagnostics() {
-    // Full Diagnosis - Most important for troubleshooting
+    console.log('🔧 Initializing diagnostics event listeners...');
+    
+    // Full Diagnosis
     const fullDiagButton = document.getElementById('run-full-diagnosis');
     if (fullDiagButton) {
         fullDiagButton.addEventListener('click', async () => {
             console.log('🚨 Running full system diagnosis...');
-            showDiagnosticsLoading(); // Use enhanced loading
+            showDiagnosticsLoading();
             
             try {
                 const response = await makeRequest('/api/v1/diagnostics/full-diagnosis', 'GET');
-                hideDiagnosticsLoading(); // Use enhanced hide
+                hideDiagnosticsLoading();
                 
                 if (response.success) {
                     displayFullDiagnosisResults(response.data);
@@ -188,6 +188,9 @@ function initDiagnostics() {
                 showDiagnosticsError(`Full diagnosis error: ${error.message}`);
             }
         });
+        console.log('✅ Full Diagnosis button initialized');
+    } else {
+        console.warn('❌ Full Diagnosis button not found');
     }
 
     // Network Connectivity Test
@@ -210,8 +213,10 @@ function initDiagnostics() {
                 showDiagnosticsError(`Connectivity test error: ${error.message}`);
             }
         });
+        console.log('✅ Connectivity Test button initialized');
+    } else {
+        console.warn('❌ Connectivity Test button not found');
     }
-
 
     // API Key Test
     const apiKeyButton = document.getElementById('test-api-key');
@@ -239,8 +244,10 @@ function initDiagnostics() {
                 });
             }
         });
+        console.log('✅ API Key Test button initialized');
+    } else {
+        console.warn('❌ API Key Test button not found');
     }
-
 
     // API Statistics
     const apiStatsButton = document.getElementById('get-api-stats');
@@ -262,10 +269,12 @@ function initDiagnostics() {
                 showDiagnosticsError(`API stats error: ${error.message}`);
             }
         });
+        console.log('✅ API Statistics button initialized');
+    } else {
+        console.warn('❌ API Statistics button not found');
     }
 
-
-    // Get Available Filters (Original functionality)
+    // Get Available Filters
     const filtersButton = document.getElementById('run-diagnostics');
     if (filtersButton) {
         filtersButton.addEventListener('click', async () => {
@@ -285,8 +294,10 @@ function initDiagnostics() {
                 showDiagnosticsError(`Error getting filters: ${error.message}`);
             }
         });
+        console.log('✅ Get Filters button initialized');
+    } else {
+        console.warn('❌ Get Filters button not found');
     }
-
 
     // Test Different Endpoints
     const endpointsButton = document.getElementById('test-endpoints');
@@ -308,9 +319,12 @@ function initDiagnostics() {
                 showDiagnosticsError(`Endpoint test error: ${error.message}`);
             }
         });
+        console.log('✅ Test Endpoints button initialized');
+    } else {
+        console.warn('❌ Test Endpoints button not found');
     }
 
-    // Comprehensive endpoint testing handler
+    // 🔬 Comprehensive API Test - THE IMPORTANT ONE
     const comprehensiveButton = document.getElementById('test-comprehensive-endpoints');
     if (comprehensiveButton) {
         comprehensiveButton.addEventListener('click', async () => {
@@ -330,8 +344,10 @@ function initDiagnostics() {
                 showDiagnosticsError(`Comprehensive endpoint test error: ${error.message}`);
             }
         });
+        console.log('✅ Comprehensive API Test button initialized');
+    } else {
+        console.warn('❌ Comprehensive API Test button NOT FOUND - check HTML template!');
     }
-
 
     // Reset API Keys
     const resetButton = document.getElementById('reset-keys');
@@ -357,7 +373,12 @@ function initDiagnostics() {
                 showDiagnosticsError(`Reset keys error: ${error.message}`);
             }
         });
+        console.log('✅ Reset Keys button initialized');
+    } else {
+        console.warn('❌ Reset Keys button not found');
     }
+    
+    console.log('🎉 All diagnostics event listeners initialized successfully');
 }
 
 // Display comprehensive endpoint test results
