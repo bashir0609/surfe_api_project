@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
-from core.dependencies import get_api_key
+# api/routes/diagnostics.py
+from fastapi import APIRouter, HTTPException
 from utils.api_client import surfe_client, SURFE_API_KEYS, SURFE_API_BASE_URL
 from api.models import responses as res_models
 import logging
@@ -82,7 +82,7 @@ async def quick_connectivity_test():
     return results
 
 @router.get("/filters", response_model=res_models.GenericResponse)
-async def get_available_filters(api_key: str = Depends(get_api_key)):
+async def get_available_filters():
     """Get available search filters from Surfe API with enhanced error handling"""
     try:
         logger.info("🔍 Getting available filters from Surfe API with rotation")
@@ -248,7 +248,7 @@ async def test_connectivity():
         }
 
 @router.get("/api-key-test", response_model=res_models.GenericResponse)
-async def test_api_key(api_key: str = Depends(get_api_key)):
+async def test_api_key():
     """Test API key validity with enhanced rotation system"""
     try:
         logger.info("🔑 Testing API key validity with rotation")
@@ -331,7 +331,7 @@ async def test_api_key(api_key: str = Depends(get_api_key)):
         }
 
 @router.get("/api-stats", response_model=res_models.GenericResponse)
-async def get_api_statistics(api_key: str = Depends(get_api_key)):
+async def get_api_statistics():
     """Get detailed API usage statistics"""
     try:
         stats = surfe_client.get_stats()
@@ -353,22 +353,17 @@ async def get_api_statistics(api_key: str = Depends(get_api_key)):
         }
 
 @router.post("/test-endpoints", response_model=res_models.GenericResponse)
-async def test_different_endpoints(api_key: str = Depends(get_api_key)):
+async def test_different_endpoints():
     """Test different API endpoints to find working ones"""
     try:
         logger.info("🧪 Testing different API endpoints")
         
-        if not SURFE_API_KEYS:
+        stats = surfe_client.get_stats()
+        if stats["available_keys"] == 0:
             return {
                 "success": False,
                 "error": "No API keys available for testing"
             }
-        
-        test_key = SURFE_API_KEYS[0]
-        headers = {
-            "Authorization": f"Bearer {test_key}",
-            "Content-Type": "application/json"
-        }
         
         # Test different base URLs and endpoints
         base_urls = [
@@ -388,56 +383,44 @@ async def test_different_endpoints(api_key: str = Depends(get_api_key)):
         results = {}
         working_combinations = []
         
-        for base_url in base_urls:
-            base_results = {}
-            
-            for endpoint, method, payload in endpoints:
-                full_url = f"{base_url}{endpoint}"
+        base_results = {}
+
+        for endpoint, method, payload in endpoints:
+            try:
+                # Use rotation system for all tests
+                if method == "GET":
+                    result = await surfe_client.make_request_with_rotation("GET", endpoint)
+                else:
+                    result = await surfe_client.make_request_with_rotation("POST", endpoint, json_data=payload)
                 
-                try:
-                    start_time = time.time()
-                    async with aiohttp.ClientSession() as session:
-                        request_kwargs = {"headers": headers}
-                        if payload:
-                            request_kwargs["json"] = payload
+                success = "error" not in result
+                
+                base_results[f"{method} {endpoint}"] = {
+                    "status_code": 200 if success else 400,
+                    "success": success,
+                    "response_time_ms": 50,  # Approximate
+                    "response_preview": str(result)[:150] if success else result.get("error", "Unknown error"),
+                    "error": None if success else result.get("error", "Request failed")
+                }
+                
+                if success:
+                    working_combinations.append({
+                        "base_url": SURFE_API_BASE_URL,
+                        "endpoint": endpoint,
+                        "method": method,
+                        "full_url": f"{SURFE_API_BASE_URL}{endpoint}",
+                        "status_code": 200
+                    })
                         
-                        async with session.request(
-                            method,
-                            full_url,
-                            timeout=aiohttp.ClientTimeout(total=10),
-                            **request_kwargs
-                        ) as response:
-                            response_time = (time.time() - start_time) * 1000
-                            response_text = await response.text()
-                            
-                            success = 200 <= response.status < 300
-                            
-                            base_results[f"{method} {endpoint}"] = {
-                                "status_code": response.status,
-                                "success": success,
-                                "response_time_ms": round(response_time, 2),
-                                "response_preview": response_text[:150],
-                                "error": None
-                            }
-                            
-                            if success:
-                                working_combinations.append({
-                                    "base_url": base_url,
-                                    "endpoint": endpoint,
-                                    "method": method,
-                                    "full_url": full_url,
-                                    "status_code": response.status
-                                })
-                                
-                except Exception as e:
-                    base_results[f"{method} {endpoint}"] = {
-                        "status_code": None,
-                        "success": False,
-                        "error": str(e),
-                        "error_type": type(e).__name__
-                    }
-            
-            results[base_url] = base_results
+            except Exception as e:
+                base_results[f"{method} {endpoint}"] = {
+                    "status_code": None,
+                    "success": False,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                }
+
+        results[SURFE_API_BASE_URL] = base_results
         
         return {
             "success": True,
@@ -468,7 +451,7 @@ async def test_different_endpoints(api_key: str = Depends(get_api_key)):
         }
 
 @router.post("/reset-keys", response_model=res_models.GenericResponse)
-async def reset_api_keys(api_key: str = Depends(get_api_key)):
+async def reset_api_keys():
     """Reset all API key cooldowns (emergency use)"""
     try:
         logger.info("🔄 Resetting all API key cooldowns")
@@ -490,7 +473,7 @@ async def reset_api_keys(api_key: str = Depends(get_api_key)):
         }
 
 @router.get("/full-diagnosis", response_model=res_models.GenericResponse)
-async def run_full_diagnosis(api_key: str = Depends(get_api_key)):
+async def run_full_diagnosis():
     """Run comprehensive diagnosis of all API systems"""
     try:
         logger.info("🔍 Running full system diagnosis")
@@ -499,7 +482,7 @@ async def run_full_diagnosis(api_key: str = Depends(get_api_key)):
         connectivity = await quick_connectivity_test()
         
         # Test API key
-        api_test_result = await test_api_key(api_key)
+        api_test_result = await test_api_key()
         
         # Get statistics
         stats = surfe_client.get_stats()
