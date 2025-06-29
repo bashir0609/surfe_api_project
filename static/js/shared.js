@@ -37,14 +37,23 @@ async function makeRequest(endpoint, method = 'GET', data = null) {
 
         // FIXED: Better error handling for non-JSON responses
         let result;
+        const contentType = response.headers.get('content-type');
+
         try {
-            result = await response.json();
-        } catch (jsonError) {
-            // Handle non-JSON responses
-            const text = await response.text();
+            if (contentType && contentType.includes('application/json')) {
+                result = await response.json();
+            } else {
+                const text = await response.text();
+                result = { 
+                    success: false, 
+                    detail: { error: `Non-JSON response: ${text.substring(0, 200)}...` },
+                    status_code: response.status
+                };
+            }
+        } catch (readError) {
             result = { 
                 success: false, 
-                detail: { error: `Non-JSON response: ${text.substring(0, 200)}...` },
+                detail: { error: `Error reading response: ${readError.message}` },
                 status_code: response.status
             };
         }
@@ -365,6 +374,7 @@ const EMPLOYEE_PRESETS = [
 // shared.js - Common components and utilities
 
 // Create sidebar component
+
 function createSidebar() {
     const currentPath = window.location.pathname;
 
