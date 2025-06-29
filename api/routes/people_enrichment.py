@@ -40,7 +40,6 @@ async def start_people_enrichment_v2(
         background_tasks_runner.add_task(
             background_tasks.run_enrichment_task,
             job_id,  # Pass job_id as first argument
-            None,    # No individual API key - will use rotation
             "/v2/people/enrich",
             "/v2/people/enrich/{id}",
             payload
@@ -127,7 +126,6 @@ async def start_people_enrichment_v1(
         background_tasks_runner.add_task(
             background_tasks.run_enrichment_task,
             job_id,
-            None,    # No individual API key - will use rotation
             "/v2/people/enrich",
             "/v2/people/enrich/{id}",
             payload
