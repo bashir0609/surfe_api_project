@@ -452,4 +452,25 @@ function cleanDomain(domainValue) {
         .replace(/\/$/, '')
         .toLowerCase();
 }
+
+// shared.js - Add dashboard activity logging function
+async function logActivity(activityType, description, count = 1) {
+    try {
+        const activityData = {
+            activity_type: activityType,
+            description: description,
+            count: count
+        };
+        
+        console.log(`📊 Logging dashboard activity: ${activityType} - ${description} (${count})`);
+        
+        // Log to dashboard - don't wait for response to avoid blocking UI
+        makeRequest('/api/dashboard/activity', 'POST', activityData).catch(error => {
+            console.warn('Failed to log dashboard activity:', error);
+        });
+        
+    } catch (error) {
+        console.warn('Error logging dashboard activity:', error);
+    }
+}
 console.log('Shared.js loaded successfully');

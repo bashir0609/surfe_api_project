@@ -405,6 +405,11 @@ function displayResults(data) {
         return;
     }
     
+    // Log activity to dashboard
+    if (data && data.people && data.people.length > 0) {
+        logActivity('people_enrichment', `Enriched ${data.people.length} people`, data.people.length);
+    }
+
     container.innerHTML = `
         <div class="mb-8">
             <div class="flex justify-between items-center mb-4">

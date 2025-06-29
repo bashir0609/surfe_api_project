@@ -233,78 +233,6 @@ async function loadDashboardStats() {
     }
 }
 
-// FIXED: Enhanced makeRequest function with better error handling
-async function makeRequest(endpoint, method = 'GET', data = null) {
-    let url;
-
-    // Determine if this should go to local backend or external Surfe API
-    if (endpoint.startsWith('/api/')) {
-        // Local backend endpoints (your custom API)
-        const baseUrl = window.location.origin; // FIXED: Use current origin instead of hardcoded localhost
-        url = `${baseUrl}${endpoint}`;
-        console.log(`🏠 LOCAL: Making ${method} request to: ${url}`);
-    } else if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
-        // Full URLs (external APIs like Surfe)
-        url = endpoint;
-        console.log(`🌐 EXTERNAL: Making ${method} request to: ${url}`);
-    } else {
-        // Relative paths - assume external Surfe API for backward compatibility
-        const surfeBaseUrl = 'https://api.surfe.com';
-        url = `${surfeBaseUrl}${endpoint}`;
-        console.log(`🌐 SURFE: Making ${method} request to: ${url}`);
-    }
-
-    const options = {
-        method: method,
-        headers: { 'Content-Type': 'application/json' },
-    };
-
-    if (data && method !== 'GET') {
-        options.body = JSON.stringify(data);
-        console.log(`📤 Request data:`, data);
-    }
-
-    try {
-        const response = await fetch(url, options);
-        console.log(`📥 Response status: ${response.status}`);
-
-        // FIXED: Handle non-JSON responses gracefully
-        let result;
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            result = await response.json();
-        } else {
-            const text = await response.text();
-            result = { 
-                success: false, 
-                error: `Non-JSON response: ${text.substring(0, 100)}...`,
-                status: response.status 
-            };
-        }
-        
-        console.log(`📦 Response data:`, result);
-
-        // FIXED: Return result with status info even if not ok
-        if (!response.ok) {
-            return {
-                success: false,
-                error: result.error || result.detail || `HTTP ${response.status}`,
-                status: response.status,
-                ...result
-            };
-        }
-
-        return result;
-    } catch (error) {
-        console.error('🚨 Fetch error:', error);
-        return { 
-            success: false, 
-            error: `Network error: ${error.message}`,
-            type: 'network_error'
-        };
-    }
-}
-
 // Update dashboard UI with data
 function updateDashboardUI(data) {
     console.log('Updating dashboard UI with data:', data);
@@ -439,42 +367,6 @@ function handleQuickSearchEnter(event) {
     }
 }
 
-// Log activity to backend
-async function logActivity(type, description, count = 0) {
-    try {
-        await makeRequest('/api/dashboard/activity', 'POST', {
-            activity_type: type,
-            description: description,
-            count: count
-        });
-    } catch (error) {
-        console.error('Error logging activity:', error);
-    }
-}
-
-// Refresh dashboard
-async function refreshDashboard() {
-    await loadDashboardStats();
-    showTemporaryMessage('Dashboard refreshed!', 'success');
-}
-
-// Reset stats
-async function resetStats() {
-    if (confirm('Are you sure you want to reset all dashboard statistics? This cannot be undone.')) {
-        try {
-            const response = await makeRequest('/api/dashboard/reset', 'POST');
-            if (response.success) {
-                await loadDashboardStats();
-                showTemporaryMessage('Dashboard stats reset successfully!', 'success');
-            } else {
-                showError('Failed to reset stats');
-            }
-        } catch (error) {
-            showError(`Error resetting stats: ${error.message}`);
-        }
-    }
-}
-
 // Utility functions
 function getTimeAgo(date) {
     const now = new Date();
@@ -550,6 +442,5 @@ window.refreshDashboard = refreshDashboard;
 window.resetStats = resetStats;
 window.performQuickSearch = performQuickSearch;
 window.handleQuickSearchEnter = handleQuickSearchEnter;
-window.logActivity = logActivity;
 
 console.log('🎯 Dashboard.js loaded successfully');
