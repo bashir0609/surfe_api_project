@@ -271,3 +271,72 @@ body {
 .filter-tag {
     @apply text-xs px-2 py-1 bg-purple-100 text-purple-800 rounded-full hover:bg-purple-200 transition-colors cursor-pointer border-0;
 }
+
+.csv-upload-component {
+    transition: all 0.3s ease;
+}
+
+.csv-upload-component:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.csv-preview table {
+    font-size: 0.875rem;
+}
+
+.csv-preview th {
+    background-color: #f9fafb;
+    font-weight: 600;
+}
+
+.csv-preview td {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.csv-filters-section .grid {
+    align-items: start;
+}
+
+/* Upload area hover effects */
+.border-dashed:hover {
+    border-color: #6b7280;
+    background-color: #f9fafb;
+}
+
+/* Filter info panels */
+.csv-filters-section [id$="-info"] {
+    transition: all 0.3s ease;
+}
+
+.csv-filters-section [id$="-info"]:not(.hidden) {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .csv-filters-section .grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .csv-preview {
+        overflow-x: auto;
+    }
+    
+    .csv-preview table {
+        min-width: 500px;
+    }
+}

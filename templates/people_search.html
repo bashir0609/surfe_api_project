@@ -75,6 +75,52 @@
             
             <main class="flex-1 p-6 md:p-8 overflow-y-auto">
                 <div id="main-content"></div>
+                <div class="csv-filters-section mb-8">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">👥 Company Domain Filters</h2>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Include Company Domains -->
+                            <div>
+                                <h3 class="text-lg font-medium text-green-800 mb-3">✅ Target Specific Companies</h3>
+                                <div id="people-include-domains-upload" class="mb-4"></div>
+                                <div id="people-include-domains-info" class="hidden"></div>
+                            </div>
+                            
+                            <!-- Exclude Company Domains -->
+                            <div>
+                                <h3 class="text-lg font-medium text-red-800 mb-3">❌ Exclude Company Domains</h3>
+                                <div id="people-exclude-domains-upload" class="mb-4"></div>
+                                <div id="people-exclude-domains-info" class="hidden"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                            <h4 class="text-purple-800 font-medium mb-2">Company Domain Filtering for People Search:</h4>
+                            <ul class="text-purple-700 text-sm space-y-1">
+                                <li><strong>Target Companies:</strong> Find people who work at specific company domains only</li>
+                                <li><strong>Exclude Companies:</strong> Remove people from unwanted company domains</li>
+                                <li><strong>Use Cases:</strong> Target competitors, exclude current customers, focus on prospects</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add export button to people search results section -->
+                <div class="people-search-results-section">
+                    <!-- Your existing people search results display -->
+                    <div id="people-search-results">
+                        <!-- Results will be displayed here -->
+                    </div>
+                    
+                    <!-- Export Button -->
+                    <div class="mt-4">
+                        <button id="export-people-search-results" 
+                                class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                            📊 Export People Search Results to CSV
+                        </button>
+                    </div>
+                </div>
             </main>
         </div>
     </div>

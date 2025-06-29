@@ -22,6 +22,51 @@
             
             <main class="flex-1 p-6 md:p-8 overflow-y-auto">
                 <div id="main-content"></div>
+                <div class="csv-filters-section mb-8">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">🔍 Domain Filters</h2>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Include Domains -->
+                            <div>
+                                <h3 class="text-lg font-medium text-green-800 mb-3">✅ Include Specific Domains</h3>
+                                <div id="include-domains-upload" class="mb-4"></div>
+                                <div id="include-domains-info" class="hidden"></div>
+                            </div>
+                            
+                            <!-- Exclude Domains -->
+                            <div>
+                                <h3 class="text-lg font-medium text-red-800 mb-3">❌ Exclude Domains</h3>
+                                <div id="exclude-domains-upload" class="mb-4"></div>
+                                <div id="exclude-domains-info" class="hidden"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <h4 class="text-blue-800 font-medium mb-2">How Domain Filters Work:</h4>
+                            <ul class="text-blue-700 text-sm space-y-1">
+                                <li><strong>Include Domains:</strong> When specified, search results will ONLY include companies from these domains</li>
+                                <li><strong>Exclude Domains:</strong> Companies from these domains will be removed from search results</li>
+                                <li><strong>Both Filters:</strong> Include filter is applied first, then exclude filter removes unwanted domains</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- Add export button to search results section -->
+                    <div class="search-results-section">
+                        <!-- Your existing search results display -->
+                        <div id="company-search-results">
+                            <!-- Results will be displayed here -->
+                        </div>
+                        
+                        <!-- Export Button -->
+                        <div class="mt-4">
+                            <button id="export-search-results" 
+                                    class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                                📊 Export Search Results to CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </main>
         </div>
     </div>

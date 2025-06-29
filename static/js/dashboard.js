@@ -476,4 +476,221 @@ window.resetStats = resetStats;
 window.performQuickSearch = performQuickSearch;
 window.handleQuickSearchEnter = handleQuickSearchEnter;
 
-console.log('🎯 Dashboard.js loaded successfully');
+// Complete exportDashboardData function for dashboard.js
+
+function exportDashboardData() {
+    // Collect dashboard data
+    const dashboardData = [
+        {
+            metric: 'CSV Uploads',
+            count: document.getElementById('csv-uploads-count').textContent,
+            date: new Date().toISOString()
+        },
+        {
+            metric: 'CSV Exports', 
+            count: document.getElementById('csv-exports-count').textContent,
+            date: new Date().toISOString()
+        },
+        {
+            metric: 'Bulk Enrichments',
+            count: document.getElementById('bulk-enrichments-count').textContent,
+            date: new Date().toISOString()
+        },
+        {
+            metric: 'Filtered Searches',
+            count: document.getElementById('filtered-searches-count').textContent,
+            date: new Date().toISOString()
+        }
+    ];
+    
+    // Add additional dashboard metrics if they exist
+    const additionalMetrics = [
+        { id: 'total-api-requests', name: 'Total API Requests' },
+        { id: 'successful-requests', name: 'Successful Requests' },
+        { id: 'success-rate', name: 'Success Rate (%)' },
+        { id: 'available-keys', name: 'Available API Keys' },
+        { id: 'people-searches', name: 'People Searches' },
+        { id: 'company-searches', name: 'Company Searches' },
+        { id: 'people-enrichments', name: 'People Enrichments' },
+        { id: 'company-enrichments', name: 'Company Enrichments' }
+    ];
+    
+    // Add metrics that exist on the page
+    additionalMetrics.forEach(metric => {
+        const element = document.getElementById(metric.id);
+        if (element) {
+            dashboardData.push({
+                metric: metric.name,
+                count: element.textContent,
+                date: new Date().toISOString()
+            });
+        }
+    });
+    
+    // Create timestamp for filename
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `dashboard_analytics_${timestamp}.csv`;
+    
+    // Export to CSV using shared.js function
+    if (exportToCSV(dashboardData, filename)) {
+        console.log('✅ Dashboard data exported successfully');
+        
+        // Log the export activity
+        logActivity('Dashboard CSV Export', `Exported dashboard analytics (${dashboardData.length} metrics)`, dashboardData.length);
+    }
+}
+
+// Update CSV analytics counters
+function updateCSVAnalytics() {
+    // This integrates with your activity logging system
+    fetch('/api/dashboard/csv-analytics')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update CSV-specific metrics
+                const csvUploads = document.getElementById('csv-uploads-count');
+                const csvExports = document.getElementById('csv-exports-count');
+                const bulkEnrichments = document.getElementById('bulk-enrichments-count');
+                const filteredSearches = document.getElementById('filtered-searches-count');
+                
+                if (csvUploads) csvUploads.textContent = data.csv_uploads || 0;
+                if (csvExports) csvExports.textContent = data.csv_exports || 0;
+                if (bulkEnrichments) bulkEnrichments.textContent = data.bulk_enrichments || 0;
+                if (filteredSearches) filteredSearches.textContent = data.filtered_searches || 0;
+                
+                console.log('📊 CSV analytics updated:', data);
+            }
+        })
+        .catch(error => {
+            console.error('Failed to load CSV analytics:', error);
+            // Fallback: try to get data from localStorage or other sources
+            updateCSVAnalyticsFromStorage();
+        });
+}
+
+// Fallback function to get CSV analytics from local storage
+function updateCSVAnalyticsFromStorage() {
+    try {
+        const activities = JSON.parse(localStorage.getItem('recent_activities') || '[]');
+        
+        // Count CSV-related activities
+        const csvUploads = activities.filter(a => a.activity_type.includes('CSV Upload')).length;
+        const csvExports = activities.filter(a => a.activity_type.includes('CSV Export')).length;
+        const bulkEnrichments = activities.filter(a => a.activity_type.includes('Bulk Enrichment')).length;
+        const filteredSearches = activities.filter(a => a.description.includes('filter')).length;
+        
+        // Update counters
+        const csvUploadsEl = document.getElementById('csv-uploads-count');
+        const csvExportsEl = document.getElementById('csv-exports-count');
+        const bulkEnrichmentsEl = document.getElementById('bulk-enrichments-count');
+        const filteredSearchesEl = document.getElementById('filtered-searches-count');
+        
+        if (csvUploadsEl) csvUploadsEl.textContent = csvUploads;
+        if (csvExportsEl) csvExportsEl.textContent = csvExports;
+        if (bulkEnrichmentsEl) bulkEnrichmentsEl.textContent = bulkEnrichments;
+        if (filteredSearchesEl) filteredSearchesEl.textContent = filteredSearches;
+        
+        console.log('📊 CSV analytics updated from storage');
+    } catch (error) {
+        console.error('Failed to update CSV analytics from storage:', error);
+    }
+}
+
+// Enhanced dashboard initialization with CSV analytics
+function initializeDashboardCSV() {
+    console.log('📊 Initializing dashboard CSV analytics...');
+    
+    // Initial load
+    updateCSVAnalytics();
+    
+    // Refresh analytics every 30 seconds
+    setInterval(updateCSVAnalytics, 30000);
+    
+    // Setup export button if it doesn't exist
+    const exportButton = document.getElementById('export-dashboard-data');
+    if (exportButton) {
+        exportButton.addEventListener('click', exportDashboardData);
+    }
+    
+    // Add keyboard shortcut for export (Ctrl+E)
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'e') {
+            e.preventDefault();
+            exportDashboardData();
+        }
+    });
+    
+    console.log('✅ Dashboard CSV analytics initialized');
+}
+
+// Enhanced activity logging for CSV operations
+async function logCSVActivity(activityType, description, count = 1, additionalData = {}) {
+    try {
+        // Use existing logActivity function but with CSV-specific enhancements
+        await logActivity(activityType, description, count);
+        
+        // Store CSV-specific data in localStorage for analytics
+        const csvActivities = JSON.parse(localStorage.getItem('csv_activities') || '[]');
+        csvActivities.push({
+            timestamp: new Date().toISOString(),
+            type: activityType,
+            description: description,
+            count: count,
+            ...additionalData
+        });
+        
+        // Keep only last 100 CSV activities
+        if (csvActivities.length > 100) {
+            csvActivities.splice(0, csvActivities.length - 100);
+        }
+        
+        localStorage.setItem('csv_activities', JSON.stringify(csvActivities));
+        
+        // Update analytics immediately
+        updateCSVAnalytics();
+        
+    } catch (error) {
+        console.error('Failed to log CSV activity:', error);
+    }
+}
+
+// Export CSV activity history
+function exportCSVActivityHistory() {
+    try {
+        const csvActivities = JSON.parse(localStorage.getItem('csv_activities') || '[]');
+        
+        if (csvActivities.length === 0) {
+            showError('No CSV activity history to export');
+            return;
+        }
+        
+        const timestamp = new Date().toISOString().split('T')[0];
+        const filename = `csv_activity_history_${timestamp}.csv`;
+        
+        if (exportToCSV(csvActivities, filename)) {
+            console.log('✅ CSV activity history exported successfully');
+            logActivity('CSV History Export', `Exported ${csvActivities.length} CSV activities`, csvActivities.length);
+        }
+        
+    } catch (error) {
+        console.error('Failed to export CSV activity history:', error);
+        showError('Failed to export CSV activity history');
+    }
+}
+
+// Call this in your existing dashboard initialization
+document.addEventListener('DOMContentLoaded', function() {
+    // Your existing dashboard initialization code...
+    
+    // Add CSV analytics initialization
+    initializeDashboardCSV();
+});
+
+// Export functions for use in other files
+window.exportDashboardData = exportDashboardData;
+window.updateCSVAnalytics = updateCSVAnalytics;
+window.logCSVActivity = logCSVActivity;
+window.exportCSVActivityHistory = exportCSVActivityHistory;
+
+console.log('📊 Dashboard CSV functionality loaded successfully');
+
