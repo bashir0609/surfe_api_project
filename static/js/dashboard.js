@@ -26,7 +26,6 @@ function createDashboardPage() {
                 <div id="last-updated" class="text-sm text-gray-500 mt-2"></div>
             </div>
 
-            // dashboard.js - Update stats cards for Option A activities
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <div class="flex items-center">
