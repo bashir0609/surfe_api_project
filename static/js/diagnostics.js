@@ -1,4 +1,5 @@
 // Enhanced diagnostics.js with network troubleshooting
+// Uses shared.js functions: makeRequest, showLoading, hideLoading, showError
 
 // Function to create the enhanced diagnostics page content
 function createDiagnosticsPage() {
@@ -42,7 +43,7 @@ function createDiagnosticsPage() {
             <!-- Advanced Tests -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-8">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">Advanced Tests</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <button 
                         id="run-diagnostics" 
                         class="bg-indigo-600 text-white py-3 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-200 font-medium">
@@ -53,6 +54,12 @@ function createDiagnosticsPage() {
                         id="test-endpoints" 
                         class="bg-yellow-600 text-white py-3 px-4 rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition duration-200 font-medium">
                         🧪 Test Endpoints
+                    </button>
+                    
+                    <button 
+                        id="test-comprehensive-endpoints" 
+                        class="bg-cyan-600 text-white py-3 px-4 rounded-md hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition duration-200 font-medium">
+                        🔬 Comprehensive API Test
                     </button>
                     
                     <button 
@@ -77,20 +84,13 @@ function createDiagnosticsPage() {
                             <ul class="list-disc list-inside space-y-1">
                                 <li><strong>Get Filters:</strong> Test API by retrieving available search filters</li>
                                 <li><strong>Test Endpoints:</strong> Find working API URL combinations</li>
+                                <li><strong>Comprehensive Test:</strong> Deep endpoint analysis with detailed reporting</li>
                                 <li><strong>Reset Keys:</strong> Clear API key cooldowns (emergency use)</li>
                             </ul>
                         </div>
                     </div>
                 </div>
             </div>
-            
-
-            // diagnostics.js - Add comprehensive endpoint testing
-            <button 
-                id="test-comprehensive-endpoints" 
-                class="bg-indigo-600 text-white py-3 px-4 rounded-md hover:bg-indigo-700 transition duration-200 font-medium">
-                🔬 Comprehensive API Test
-            </button>
 
             <!-- Loading and Error States -->
             <div id="loading-indicator" class="hidden text-center py-8">
@@ -111,177 +111,304 @@ function createDiagnosticsPage() {
     `;
 }
 
-// diagnostics.js - Add comprehensive endpoint testing handler
-document.getElementById('test-comprehensive-endpoints').addEventListener('click', async () => {
-    console.log('🔬 Running comprehensive API endpoint testing...');
-    showLoading();
-    
-    try {
-        const response = await makeRequest('/api/v1/diagnostics/test-endpoints-comprehensive', 'POST');
-        hideLoading();
-        
-        if (response.success) {
-            displayComprehensiveEndpointResults(response.data);
-        } else {
-            showError(response.error || 'Comprehensive endpoint testing failed');
-        }
-    } catch (error) {
-        hideLoading();
-        showError(`Comprehensive endpoint test error: ${error.message}`);
-    }
-});
-
 // Initialize enhanced diagnostics functionality
 function initDiagnostics() {
     // Full Diagnosis - Most important for troubleshooting
-    document.getElementById('run-full-diagnosis').addEventListener('click', async () => {
-        console.log('🚨 Running full system diagnosis...');
-        showLoading();
-        
-        try {
-            const response = await makeRequest('/api/v1/diagnostics/full-diagnosis', 'GET');
-            hideLoading();
+    const fullDiagButton = document.getElementById('run-full-diagnosis');
+    if (fullDiagButton) {
+        fullDiagButton.addEventListener('click', async () => {
+            console.log('🚨 Running full system diagnosis...');
+            showLoading();
             
-            if (response.success) {
-                displayFullDiagnosisResults(response.data);
-            } else {
-                showError(response.error || 'Full diagnosis failed');
+            try {
+                const response = await makeRequest('/api/v1/diagnostics/full-diagnosis', 'GET');
+                hideLoading();
+                
+                if (response.success) {
+                    displayFullDiagnosisResults(response.data);
+                } else {
+                    showError(response.error || 'Full diagnosis failed');
+                }
+            } catch (error) {
+                hideLoading();
+                showError(`Full diagnosis error: ${error.message}`);
             }
-        } catch (error) {
-            hideLoading();
-            showError(`Full diagnosis error: ${error.message}`);
-        }
-    });
+        });
+    }
 
     // Network Connectivity Test
-    document.getElementById('test-connectivity').addEventListener('click', async () => {
-        console.log('🌐 Testing network connectivity...');
-        showLoading();
-        
-        try {
-            const response = await makeRequest('/api/v1/diagnostics/connectivity', 'GET');
-            hideLoading();
+    const connectivityButton = document.getElementById('test-connectivity');
+    if (connectivityButton) {
+        connectivityButton.addEventListener('click', async () => {
+            console.log('🌐 Testing network connectivity...');
+            showLoading();
             
-            if (response.success) {
-                displayConnectivityResults(response.data);
-            } else {
-                showError(response.error || 'Connectivity test failed');
+            try {
+                const response = await makeRequest('/api/v1/diagnostics/connectivity', 'GET');
+                hideLoading();
+                
+                if (response.success) {
+                    displayConnectivityResults(response.data);
+                } else {
+                    showError(response.error || 'Connectivity test failed');
+                }
+            } catch (error) {
+                hideLoading();
+                showError(`Connectivity test error: ${error.message}`);
             }
-        } catch (error) {
-            hideLoading();
-            showError(`Connectivity test error: ${error.message}`);
-        }
-    });
+        });
+    }
 
     // API Key Test
-    document.getElementById('test-api-key').addEventListener('click', async () => {
-        console.log('🔑 Testing API key with rotation...');
-        showLoading();
-        
-        try {
-            const response = await makeRequest('/api/v1/diagnostics/api-key-test', 'GET');
-            hideLoading();
+    const apiKeyButton = document.getElementById('test-api-key');
+    if (apiKeyButton) {
+        apiKeyButton.addEventListener('click', async () => {
+            console.log('🔑 Testing API key with rotation...');
+            showLoading();
             
-            if (response.success) {
-                displayApiKeyResults(response.data);
-            } else {
+            try {
+                const response = await makeRequest('/api/v1/diagnostics/api-key-test', 'GET');
+                hideLoading();
+                
+                if (response.success) {
+                    displayApiKeyResults(response.data);
+                } else {
+                    displayApiKeyResults({
+                        valid: false,
+                        error: response.error || 'API key test failed'
+                    });
+                }
+            } catch (error) {
+                hideLoading();
                 displayApiKeyResults({
                     valid: false,
-                    error: response.error || 'API key test failed'
+                    error: `API key test error: ${error.message}`
                 });
             }
-        } catch (error) {
-            hideLoading();
-            displayApiKeyResults({
-                valid: false,
-                error: `API key test error: ${error.message}`
-            });
-        }
-    });
+        });
+    }
 
     // API Statistics
-    document.getElementById('get-api-stats').addEventListener('click', async () => {
-        console.log('📊 Getting API statistics...');
-        showLoading();
-        
-        try {
-            const response = await makeRequest('/api/v1/diagnostics/api-stats', 'GET');
-            hideLoading();
+    const apiStatsButton = document.getElementById('get-api-stats');
+    if (apiStatsButton) {
+        apiStatsButton.addEventListener('click', async () => {
+            console.log('📊 Getting API statistics...');
+            showLoading();
             
-            if (response.success) {
-                displayApiStatsResults(response.data);
-            } else {
-                showError(response.error || 'Failed to get API statistics');
+            try {
+                const response = await makeRequest('/api/v1/diagnostics/api-stats', 'GET');
+                hideLoading();
+                
+                if (response.success) {
+                    displayApiStatsResults(response.data);
+                } else {
+                    showError(response.error || 'Failed to get API statistics');
+                }
+            } catch (error) {
+                hideLoading();
+                showError(`API stats error: ${error.message}`);
             }
-        } catch (error) {
-            hideLoading();
-            showError(`API stats error: ${error.message}`);
-        }
-    });
+        });
+    }
 
     // Get Available Filters (Original functionality)
-    document.getElementById('run-diagnostics').addEventListener('click', async () => {
-        console.log('🔍 Getting available filters...');
-        showLoading();
-        
-        try {
-            const response = await makeRequest('/api/v1/diagnostics/filters', 'GET');
-            hideLoading();
+    const filtersButton = document.getElementById('run-diagnostics');
+    if (filtersButton) {
+        filtersButton.addEventListener('click', async () => {
+            console.log('🔍 Getting available filters...');
+            showLoading();
             
-            if (response.success) {
-                displayFiltersResults(response.data);
-            } else {
-                showError(response.error || 'Failed to get filters');
+            try {
+                const response = await makeRequest('/api/v1/diagnostics/filters', 'GET');
+                hideLoading();
+                
+                if (response.success) {
+                    displayFiltersResults(response.data);
+                } else {
+                    showError(response.error || 'Failed to get filters');
+                }
+            } catch (error) {
+                hideLoading();
+                showError(`Error getting filters: ${error.message}`);
             }
-        } catch (error) {
-            hideLoading();
-            showError(`Error getting filters: ${error.message}`);
-        }
-    });
+        });
+    }
 
     // Test Different Endpoints
-    document.getElementById('test-endpoints').addEventListener('click', async () => {
-        console.log('🧪 Testing different endpoints...');
-        showLoading();
-        
-        try {
-            const response = await makeRequest('/api/v1/diagnostics/test-endpoints', 'POST');
-            hideLoading();
+    const endpointsButton = document.getElementById('test-endpoints');
+    if (endpointsButton) {
+        endpointsButton.addEventListener('click', async () => {
+            console.log('🧪 Testing different endpoints...');
+            showLoading();
             
-            if (response.success) {
-                displayEndpointTestResults(response.data);
-            } else {
-                showError(response.error || 'Endpoint testing failed');
+            try {
+                const response = await makeRequest('/api/v1/diagnostics/test-endpoints', 'POST');
+                hideLoading();
+                
+                if (response.success) {
+                    displayEndpointTestResults(response.data);
+                } else {
+                    showError(response.error || 'Endpoint testing failed');
+                }
+            } catch (error) {
+                hideLoading();
+                showError(`Endpoint test error: ${error.message}`);
             }
-        } catch (error) {
-            hideLoading();
-            showError(`Endpoint test error: ${error.message}`);
-        }
-    });
+        });
+    }
+
+    // Comprehensive endpoint testing handler
+    const comprehensiveButton = document.getElementById('test-comprehensive-endpoints');
+    if (comprehensiveButton) {
+        comprehensiveButton.addEventListener('click', async () => {
+            console.log('🔬 Running comprehensive API endpoint testing...');
+            showLoading();
+            
+            try {
+                const response = await makeRequest('/api/v1/diagnostics/test-endpoints-comprehensive', 'POST');
+                hideLoading();
+                
+                if (response.success) {
+                    displayComprehensiveEndpointResults(response.data);
+                } else {
+                    showError(response.error || 'Comprehensive endpoint testing failed');
+                }
+            } catch (error) {
+                hideLoading();
+                showError(`Comprehensive endpoint test error: ${error.message}`);
+            }
+        });
+    }
 
     // Reset API Keys
-    document.getElementById('reset-keys').addEventListener('click', async () => {
-        if (!confirm('Are you sure you want to reset all API key cooldowns? This should only be used in emergencies.')) {
-            return;
-        }
-        
-        console.log('🔄 Resetting API key cooldowns...');
-        showLoading();
-        
-        try {
-            const response = await makeRequest('/api/v1/diagnostics/reset-keys', 'POST');
-            hideLoading();
-            
-            if (response.success) {
-                displayResetResults(response.data);
-            } else {
-                showError(response.error || 'Failed to reset API keys');
+    const resetButton = document.getElementById('reset-keys');
+    if (resetButton) {
+        resetButton.addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to reset all API key cooldowns? This should only be used in emergencies.')) {
+                return;
             }
-        } catch (error) {
-            hideLoading();
-            showError(`Reset keys error: ${error.message}`);
+            
+            console.log('🔄 Resetting API key cooldowns...');
+            showLoading();
+            
+            try {
+                const response = await makeRequest('/api/v1/diagnostics/reset-keys', 'POST');
+                hideLoading();
+                
+                if (response.success) {
+                    displayResetResults(response.data);
+                } else {
+                    showError(response.error || 'Failed to reset API keys');
+                }
+            } catch (error) {
+                hideLoading();
+                showError(`Reset keys error: ${error.message}`);
+            }
+        });
+    }
+}
+
+// Display comprehensive endpoint test results
+function displayComprehensiveEndpointResults(data) {
+    const container = document.getElementById('results-container');
+    
+    let html = `
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">🔬 Comprehensive Endpoint Test Results</h2>
+                <p class="text-sm text-gray-600 mt-1">Detailed analysis of all API endpoints and configurations</p>
+            </div>
+            <div class="p-6">
+    `;
+    
+    // Check if we have meaningful data structure
+    if (data && typeof data === 'object') {
+        // Display summary if available
+        if (data.summary) {
+            html += `
+                <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h3 class="text-blue-800 font-semibold mb-2">Test Summary</h3>
+                    <div class="text-blue-700 text-sm space-y-1">
+            `;
+            
+            if (typeof data.summary === 'object') {
+                Object.entries(data.summary).forEach(([key, value]) => {
+                    html += `<div><strong>${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</strong> ${value}</div>`;
+                });
+            } else {
+                html += `<div>${data.summary}</div>`;
+            }
+            
+            html += `
+                    </div>
+                </div>
+            `;
         }
-    });
+        
+        // Display working endpoints if available
+        if (data.working_endpoints && Array.isArray(data.working_endpoints) && data.working_endpoints.length > 0) {
+            html += `
+                <div class="mb-6">
+                    <h3 class="font-semibold text-gray-900 mb-3">✅ Working Endpoints (${data.working_endpoints.length})</h3>
+                    <div class="space-y-2">
+            `;
+            
+            data.working_endpoints.forEach(endpoint => {
+                html += `
+                    <div class="p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <div class="font-mono text-sm">${endpoint.method || 'GET'} ${endpoint.url || endpoint}</div>
+                        ${endpoint.status ? `<div class="text-xs text-green-600 mt-1">Status: ${endpoint.status}</div>` : ''}
+                        ${endpoint.response_time ? `<div class="text-xs text-green-600">Response Time: ${endpoint.response_time}ms</div>` : ''}
+                    </div>
+                `;
+            });
+            
+            html += '</div></div>';
+        }
+        
+        // Display failed endpoints if available
+        if (data.failed_endpoints && Array.isArray(data.failed_endpoints) && data.failed_endpoints.length > 0) {
+            html += `
+                <div class="mb-6">
+                    <h3 class="font-semibold text-gray-900 mb-3">❌ Failed Endpoints (${data.failed_endpoints.length})</h3>
+                    <div class="space-y-2">
+            `;
+            
+            data.failed_endpoints.forEach(endpoint => {
+                html += `
+                    <div class="p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <div class="font-mono text-sm">${endpoint.method || 'GET'} ${endpoint.url || endpoint}</div>
+                        ${endpoint.error ? `<div class="text-xs text-red-600 mt-1">Error: ${endpoint.error}</div>` : ''}
+                        ${endpoint.status ? `<div class="text-xs text-red-600">Status: ${endpoint.status}</div>` : ''}
+                    </div>
+                `;
+            });
+            
+            html += '</div></div>';
+        }
+        
+        // Display raw data if no structured format
+        if (!data.summary && !data.working_endpoints && !data.failed_endpoints) {
+            html += `
+                <div class="space-y-4">
+                    <h3 class="font-semibold text-gray-900">Raw Results</h3>
+                    <div class="bg-gray-50 border rounded-lg p-4">
+                        <pre class="text-sm text-gray-700 whitespace-pre-wrap overflow-x-auto">${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                </div>
+            `;
+        }
+    } else {
+        html += `
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <p class="text-yellow-800">Comprehensive test completed, but no detailed results were returned.</p>
+                <p class="text-yellow-700 text-sm mt-1">This may indicate that the endpoint is not yet fully implemented.</p>
+            </div>
+        `;
+    }
+    
+    html += '</div></div>';
+    container.innerHTML = html;
 }
 
 // Display full diagnosis results with comprehensive information
@@ -488,7 +615,7 @@ function displayApiKeyResults(data) {
 function displayApiStatsResults(data) {
     const container = document.getElementById('results-container');
     
-    html = `
+    let html = `
         <div class="bg-white rounded-lg shadow-md overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200">
                 <h2 class="text-xl font-semibold text-gray-900">📊 API Usage Statistics</h2>
@@ -771,26 +898,10 @@ function formatApiStatsInfo(stats) {
     `;
 }
 
-// Utility functions
-function showLoading() {
-    document.getElementById('loading-indicator').classList.remove('hidden');
-    document.getElementById('error-message').classList.add('hidden');
-    document.getElementById('results-container').innerHTML = '';
-}
-
-function hideLoading() {
-    document.getElementById('loading-indicator').classList.add('hidden');
-}
-
-function showError(message) {
-    const errorDiv = document.getElementById('error-message');
-    const errorText = document.getElementById('error-text');
-    
-    if (errorDiv && errorText) {
-        errorText.textContent = typeof message === 'string' ? message : JSON.stringify(message, null, 2);
-        errorDiv.classList.remove('hidden');
-    }
-    hideLoading();
-}
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔧 Enhanced Diagnostics.js loaded successfully');
+    initDiagnostics();
+});
 
 console.log('🔧 Enhanced Diagnostics.js loaded successfully');
