@@ -475,3 +475,610 @@ async function logActivity(activityType, description, count = 1) {
 }
 
 console.log('Shared.js loaded successfully');
+
+// ========================================
+// CSV UTILITIES FOR SHARED.JS
+// Add these to your existing shared.js file
+// ========================================
+
+// CSV parsing function - Universal CSV file reader
+async function parseCSVFile(file) {
+    return new Promise((resolve, reject) => {
+        if (!file) {
+            reject(new Error('No file provided'));
+            return;
+        }
+        
+        if (!file.name.toLowerCase().endsWith('.csv')) {
+            reject(new Error('Please select a CSV file'));
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const text = e.target.result;
+                const lines = text.split('\n').filter(line => line.trim());
+                
+                if (lines.length < 1) {
+                    reject(new Error('CSV file appears to be empty'));
+                    return;
+                }
+                
+                // Parse header (if exists)
+                const firstLine = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                
+                // Check if first line looks like headers or data
+                const hasHeaders = firstLine.some(cell => isNaN(cell) && cell.length > 0);
+                
+                let headers = [];
+                let dataStartIndex = 0;
+                
+                if (hasHeaders && lines.length > 1) {
+                    headers = firstLine;
+                    dataStartIndex = 1;
+                } else {
+                    // Generate generic headers
+                    headers = firstLine.map((_, index) => `Column_${index + 1}`);
+                    dataStartIndex = 0;
+                }
+                
+                // Parse data rows
+                const data = [];
+                for (let i = dataStartIndex; i < lines.length; i++) {
+                    const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+                    if (values.length === headers.length && values.some(v => v.length > 0)) {
+                        const row = {};
+                        headers.forEach((header, index) => {
+                            row[header] = values[index];
+                        });
+                        data.push(row);
+                    }
+                }
+                
+                resolve({
+                    headers: headers,
+                    data: data,
+                    rowCount: data.length,
+                    hasHeaders: hasHeaders
+                });
+                
+            } catch (error) {
+                reject(new Error(`Error parsing CSV: ${error.message}`));
+            }
+        };
+        
+        reader.onerror = () => reject(new Error('Error reading file'));
+        reader.readAsText(file);
+    });
+}
+
+// Simple CSV parsing for single-column data (domains, emails, etc.)
+async function parseSimpleCSV(file, expectedColumns = ['domain']) {
+    try {
+        const csvData = await parseCSVFile(file);
+        
+        // Extract the first column as the main data
+        const mainColumn = csvData.headers[0];
+        const simpleData = csvData.data.map(row => row[mainColumn]).filter(item => item && item.trim());
+        
+        return {
+            items: simpleData,
+            count: simpleData.length,
+            originalHeaders: csvData.headers,
+            originalData: csvData.data
+        };
+    } catch (error) {
+        throw new Error(`Failed to parse CSV: ${error.message}`);
+    }
+}
+
+// CSV generation function - Create downloadable CSV files
+function generateCSV(data, filename = 'export.csv', customHeaders = null) {
+    if (!data || data.length === 0) {
+        throw new Error('No data provided for CSV export');
+    }
+    
+    // Handle array of simple values (strings)
+    if (typeof data[0] === 'string') {
+        const csvContent = customHeaders ? 
+            `${customHeaders.join(',')}\n${data.map(item => `"${item}"`).join('\n')}` :
+            data.map(item => `"${item}"`).join('\n');
+        return csvContent;
+    }
+    
+    // Handle array of objects
+    const headers = customHeaders || Object.keys(data[0]);
+    
+    // Create CSV content
+    let csvContent = headers.join(',') + '\n';
+    
+    data.forEach(row => {
+        const values = headers.map(header => {
+            let value = row[header] || '';
+            // Convert objects/arrays to strings
+            if (typeof value === 'object') {
+                value = JSON.stringify(value);
+            }
+            // Escape commas and quotes
+            if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+                value = `"${value.replace(/"/g, '""')}"`;
+            }
+            return value;
+        });
+        csvContent += values.join(',') + '\n';
+    });
+    
+    return csvContent;
+}
+
+// CSV download function - Trigger file download
+function downloadCSV(csvContent, filename = 'export.csv') {
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    
+    if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+}
+
+// Combined export function - Generate and download CSV
+function exportToCSV(data, filename = 'export.csv', customHeaders = null) {
+    try {
+        const csvContent = generateCSV(data, filename, customHeaders);
+        downloadCSV(csvContent, filename);
+        console.log(`✅ CSV exported: ${filename} (${data.length} rows)`);
+        return true;
+    } catch (error) {
+        console.error('❌ CSV export failed:', error);
+        showError(`Failed to export CSV: ${error.message}`);
+        return false;
+    }
+}
+
+// CSV validation function - Check data structure for CSV compatibility
+function validateCSVData(data) {
+    if (!Array.isArray(data)) {
+        return { valid: false, error: 'Data must be an array' };
+    }
+    
+    if (data.length === 0) {
+        return { valid: false, error: 'Data array is empty' };
+    }
+    
+    // Handle simple string arrays
+    if (typeof data[0] === 'string') {
+        return { valid: true, type: 'simple', count: data.length };
+    }
+    
+    // Check if all objects have consistent structure
+    const firstKeys = Object.keys(data[0]).sort();
+    for (let i = 1; i < data.length; i++) {
+        const currentKeys = Object.keys(data[i]).sort();
+        if (JSON.stringify(firstKeys) !== JSON.stringify(currentKeys)) {
+            return { 
+                valid: false, 
+                error: `Inconsistent data structure at row ${i + 1}` 
+            };
+        }
+    }
+    
+    return { valid: true, type: 'objects', headers: firstKeys, count: data.length };
+}
+
+// CSV file input handler - Universal file input setup
+function setupCSVFileInput(inputElement, onFileLoaded, options = {}) {
+    if (!inputElement) {
+        console.error('❌ CSV input element not found');
+        return;
+    }
+    
+    const { simple = false, expectedColumns = ['domain'] } = options;
+    
+    inputElement.addEventListener('change', async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        try {
+            showLoading();
+            
+            const csvData = simple ? 
+                await parseSimpleCSV(file, expectedColumns) : 
+                await parseCSVFile(file);
+            
+            hideLoading();
+            
+            console.log(`✅ CSV loaded: ${csvData.count || csvData.rowCount} items`);
+            
+            if (onFileLoaded && typeof onFileLoaded === 'function') {
+                onFileLoaded(csvData, file);
+            }
+            
+        } catch (error) {
+            hideLoading();
+            showError(error.message);
+        }
+    });
+    
+    // Add file type restriction
+    inputElement.setAttribute('accept', '.csv');
+    inputElement.setAttribute('title', 'Select a CSV file');
+}
+
+// CSV preview generator - Create HTML preview of CSV data
+function generateCSVPreview(csvData, maxRows = 5, isSimple = false) {
+    if (isSimple) {
+        // Handle simple data (array of strings)
+        if (!csvData || !csvData.items || csvData.items.length === 0) {
+            return '<p class="text-gray-500">No data to preview</p>';
+        }
+        
+        const { items } = csvData;
+        const previewItems = items.slice(0, maxRows);
+        
+        return `
+            <div class="csv-preview">
+                <div class="mb-2 text-sm text-gray-600">
+                    Showing ${previewItems.length} of ${items.length} items
+                </div>
+                <div class="bg-gray-50 border rounded-lg p-3">
+                    <div class="space-y-1">
+                        ${previewItems.map(item => `<div class="text-sm font-mono">${item}</div>`).join('')}
+                        ${items.length > maxRows ? `<div class="text-xs text-gray-500 mt-2">... and ${items.length - maxRows} more</div>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Handle structured data (array of objects)
+    if (!csvData || !csvData.data || csvData.data.length === 0) {
+        return '<p class="text-gray-500">No data to preview</p>';
+    }
+    
+    const { headers, data } = csvData;
+    const previewData = data.slice(0, maxRows);
+    
+    let html = `
+        <div class="csv-preview">
+            <div class="mb-2 text-sm text-gray-600">
+                Showing ${previewData.length} of ${data.length} rows
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full border border-gray-200 text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+    `;
+    
+    headers.forEach(header => {
+        html += `<th class="border border-gray-200 px-2 py-1 text-left font-medium">${header}</th>`;
+    });
+    
+    html += `
+                        </tr>
+                    </thead>
+                    <tbody>
+    `;
+    
+    previewData.forEach(row => {
+        html += '<tr>';
+        headers.forEach(header => {
+            const value = row[header] || '';
+            html += `<td class="border border-gray-200 px-2 py-1">${value}</td>`;
+        });
+        html += '</tr>';
+    });
+    
+    html += `
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    
+    return html;
+}
+
+// Create CSV upload component - Universal CSV uploader
+function createCSVUploadComponent(containerId, onFileLoaded, options = {}) {
+    const container = document.getElementById(containerId);
+    if (!container) {
+        console.error(`❌ Container ${containerId} not found`);
+        return;
+    }
+    
+    const {
+        title = 'Upload CSV File',
+        description = 'Select a CSV file to upload and process',
+        showPreview = true,
+        maxPreviewRows = 5,
+        simple = false,
+        expectedColumns = ['domain'],
+        acceptedFormats = '.csv'
+    } = options;
+    
+    const uploadId = `${containerId}-${Date.now()}`;
+    
+    container.innerHTML = `
+        <div class="csv-upload-component bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">${title}</h3>
+            <p class="text-gray-600 mb-4">${description}</p>
+            
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                <input type="file" id="${uploadId}-file-input" class="hidden" accept="${acceptedFormats}">
+                <label for="${uploadId}-file-input" class="cursor-pointer">
+                    <div class="space-y-3">
+                        <div class="text-gray-400">
+                            <svg class="mx-auto h-12 w-12" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            <span class="font-medium text-blue-600 hover:text-blue-500">Click to upload</span>
+                            or drag and drop
+                        </div>
+                        <div class="text-xs text-gray-500">${acceptedFormats.toUpperCase()} files only</div>
+                    </div>
+                </label>
+            </div>
+            
+            <div id="${uploadId}-file-info" class="hidden mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex items-center">
+                    <svg class="h-5 w-5 text-blue-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                    </svg>
+                    <span id="${uploadId}-file-name" class="text-sm font-medium text-blue-900"></span>
+                    <span id="${uploadId}-file-stats" class="text-xs text-blue-700 ml-2"></span>
+                </div>
+            </div>
+            
+            ${showPreview ? `<div id="${uploadId}-preview" class="mt-4"></div>` : ''}
+            
+            <div id="${uploadId}-error" class="hidden mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <div class="flex">
+                    <svg class="h-5 w-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                    <span id="${uploadId}-error-text" class="text-sm text-red-800"></span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Setup file input handler
+    const fileInput = document.getElementById(`${uploadId}-file-input`);
+    const fileInfo = document.getElementById(`${uploadId}-file-info`);
+    const fileName = document.getElementById(`${uploadId}-file-name`);
+    const fileStats = document.getElementById(`${uploadId}-file-stats`);
+    const preview = document.getElementById(`${uploadId}-preview`);
+    const errorDiv = document.getElementById(`${uploadId}-error`);
+    const errorText = document.getElementById(`${uploadId}-error-text`);
+    
+    fileInput.addEventListener('change', async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        // Hide previous states
+        fileInfo.classList.add('hidden');
+        if (preview) preview.innerHTML = '';
+        errorDiv.classList.add('hidden');
+        
+        try {
+            const csvData = simple ? 
+                await parseSimpleCSV(file, expectedColumns) : 
+                await parseCSVFile(file);
+            
+            // Show file info
+            fileName.textContent = file.name;
+            const count = simple ? csvData.count : csvData.rowCount;
+            const cols = simple ? 1 : csvData.headers.length;
+            fileStats.textContent = `${count} ${simple ? 'items' : 'rows'}${simple ? '' : `, ${cols} columns`}`;
+            fileInfo.classList.remove('hidden');
+            
+            // Show preview if enabled
+            if (showPreview && preview) {
+                preview.innerHTML = generateCSVPreview(csvData, maxPreviewRows, simple);
+            }
+            
+            // Call callback
+            if (onFileLoaded && typeof onFileLoaded === 'function') {
+                onFileLoaded(csvData, file);
+            }
+            
+        } catch (error) {
+            errorText.textContent = error.message;
+            errorDiv.classList.remove('hidden');
+        }
+    });
+    
+    return {
+        uploadId,
+        reset: () => {
+            fileInput.value = '';
+            fileInfo.classList.add('hidden');
+            if (preview) preview.innerHTML = '';
+            errorDiv.classList.add('hidden');
+        }
+    };
+}
+
+// Extract specific columns from CSV data
+function extractCSVColumns(csvData, columnNames) {
+    if (!csvData || !csvData.data) {
+        throw new Error('Invalid CSV data');
+    }
+    
+    const { data, headers } = csvData;
+    const extractedData = [];
+    
+    data.forEach(row => {
+        const extractedRow = {};
+        columnNames.forEach(col => {
+            if (headers.includes(col)) {
+                extractedRow[col] = row[col];
+            }
+        });
+        extractedData.push(extractedRow);
+    });
+    
+    return {
+        headers: columnNames.filter(col => headers.includes(col)),
+        data: extractedData,
+        rowCount: extractedData.length
+    };
+}
+
+// Filter CSV data based on conditions
+function filterCSVData(csvData, filterFunction) {
+    if (!csvData || !csvData.data) {
+        throw new Error('Invalid CSV data');
+    }
+    
+    const filteredData = csvData.data.filter(filterFunction);
+    
+    return {
+        headers: csvData.headers,
+        data: filteredData,
+        rowCount: filteredData.length
+    };
+}
+
+// Merge CSV data with API results
+function mergeCSVWithResults(csvData, results, keyColumn = 'email') {
+    if (!csvData || !csvData.data || !results) {
+        throw new Error('Invalid data for merging');
+    }
+    
+    const mergedData = csvData.data.map(row => {
+        const key = row[keyColumn];
+        const result = results.find(r => r[keyColumn] === key);
+        
+        return {
+            ...row,
+            ...result,
+            // Mark enrichment status
+            enriched: result ? true : false,
+            enrichment_status: result ? 'success' : 'not_found'
+        };
+    });
+    
+    // Combine headers
+    const resultHeaders = results.length > 0 ? Object.keys(results[0]) : [];
+    const allHeaders = [...new Set([...csvData.headers, ...resultHeaders, 'enriched', 'enrichment_status'])];
+    
+    return {
+        headers: allHeaders,
+        data: mergedData,
+        rowCount: mergedData.length
+    };
+}
+
+// Domain-specific CSV utilities
+function extractDomainsFromCSV(csvData) {
+    if (!csvData || !csvData.data) {
+        throw new Error('Invalid CSV data');
+    }
+    
+    const domains = [];
+    const { data, headers } = csvData;
+    
+    // Look for domain-like columns
+    const domainColumns = headers.filter(h => 
+        h.toLowerCase().includes('domain') || 
+        h.toLowerCase().includes('website') ||
+        h.toLowerCase().includes('url')
+    );
+    
+    if (domainColumns.length === 0) {
+        // Use first column as domain
+        const firstColumn = headers[0];
+        data.forEach(row => {
+            const domain = cleanDomain(row[firstColumn]);
+            if (domain && isValidDomain(domain)) {
+                domains.push(domain);
+            }
+        });
+    } else {
+        // Use domain columns
+        data.forEach(row => {
+            domainColumns.forEach(col => {
+                const domain = cleanDomain(row[col]);
+                if (domain && isValidDomain(domain)) {
+                    domains.push(domain);
+                }
+            });
+        });
+    }
+    
+    // Remove duplicates
+    return [...new Set(domains)];
+}
+
+// Email-specific CSV utilities
+function extractEmailsFromCSV(csvData) {
+    if (!csvData || !csvData.data) {
+        throw new Error('Invalid CSV data');
+    }
+    
+    const emails = [];
+    const { data, headers } = csvData;
+    
+    // Look for email-like columns
+    const emailColumns = headers.filter(h => 
+        h.toLowerCase().includes('email') || 
+        h.toLowerCase().includes('mail')
+    );
+    
+    if (emailColumns.length === 0) {
+        // Use first column as email
+        const firstColumn = headers[0];
+        data.forEach(row => {
+            const email = row[firstColumn];
+            if (email && email.includes('@')) {
+                emails.push(email.trim());
+            }
+        });
+    } else {
+        // Use email columns
+        data.forEach(row => {
+            emailColumns.forEach(col => {
+                const email = row[col];
+                if (email && email.includes('@')) {
+                    emails.push(email.trim());
+                }
+            });
+        });
+    }
+    
+    // Remove duplicates
+    return [...new Set(emails)];
+}
+
+// Add to console for debugging
+console.log('📊 CSV functionality loaded in shared.js');
+
+// Export notification
+console.log(`
+🎉 CSV Functions Available:
+• parseCSVFile(file) - Parse full CSV with headers
+• parseSimpleCSV(file) - Parse simple single-column CSV
+• generateCSV(data, filename, headers) - Generate CSV content
+• downloadCSV(content, filename) - Download CSV file
+• exportToCSV(data, filename, headers) - Combined export
+• validateCSVData(data) - Validate data structure
+• setupCSVFileInput(element, callback, options) - Setup file input
+• generateCSVPreview(data, maxRows, isSimple) - Generate preview HTML
+• createCSVUploadComponent(id, callback, options) - Create upload UI
+• extractCSVColumns(data, columns) - Extract specific columns
+• filterCSVData(data, filterFn) - Filter CSV data
+• mergeCSVWithResults(csv, results, key) - Merge with API results
+• extractDomainsFromCSV(data) - Extract domains from CSV
+• extractEmailsFromCSV(data) - Extract emails from CSV
+`);

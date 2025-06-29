@@ -20,6 +20,34 @@
             
             <main class="flex-1 p-6 md:p-8 overflow-y-auto">
                 <div id="main-content"></div>
+                <div class="csv-section mb-8">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">📊 Bulk People Enrichment</h2>
+                    
+                    <!-- CSV Upload Area -->
+                    <div id="people-csv-upload" class="mb-6"></div>
+                    
+                    <!-- CSV Info Display -->
+                    <div id="people-csv-info" class="hidden mb-4"></div>
+                    
+                    <!-- Enrichment Controls -->
+                    <div class="flex gap-4 mb-6">
+                        <button id="start-people-enrichment" 
+                                class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed" 
+                                disabled>
+                            Upload CSV to Enable
+                        </button>
+                        
+                        <button id="export-people-results" 
+                                class="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700">
+                            📥 Export Results
+                        </button>
+                    </div>
+                    
+                    <!-- Results Area -->
+                    <div id="people-enrichment-results"></div>
+                </div>
+            </div>
             </main>
         </div>
     </div>
