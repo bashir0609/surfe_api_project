@@ -239,6 +239,8 @@ surfe-api-app/
 │   ├── 📊 diagnostics.html
 │   ├── 📊 data_quality_test.html
 │   └── 🏠 dashboard.html
+│   ├── 📊 base.html
+│   ├── 📊 404.html
 └── 🚀 main.py (FastAPI app)
 └── 🚀 dashboard_stats.json
 └── 🚀 debug_imports.py
