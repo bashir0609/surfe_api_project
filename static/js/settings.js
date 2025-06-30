@@ -16,6 +16,11 @@ async function loadAPIKeys() {
             const stats = response.data.statistics;
             updateKeysList(stats.key_details);
             updateCurrentKey(stats.last_key_used);
+
+            // Show notification if no key selected
+            if (!stats.last_key_used || stats.last_key_used === "N/A (No API Key Used Yet)") {
+                showNoApiKeySelectedNotification();
+            }
         } else {
             showError('Failed to load API keys');
         }
@@ -59,11 +64,29 @@ function updateKeysList(keyDetails) {
                         class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
                     Remove
                 </button>
+                ${isDisabled ? createEnableApiKeyButton(maskedKey, enableKeyHandler).outerHTML : ''}
             </div>
         `;
         
         container.appendChild(keyElement);
     });
+}
+
+// Handler for enable button click
+function enableKeyHandler(maskedKey) {
+    console.log('Enabling key:', maskedKey);
+    makeRequest('/api/v1/settings/enable-key', 'POST', { masked_key: maskedKey })
+        .then(response => {
+            if (response.success) {
+                showSuccess(`API key ${maskedKey} enabled successfully`);
+                loadAPIKeys();
+            } else {
+                showServerResponseNotification('Failed to enable API key');
+            }
+        })
+        .catch(error => {
+            showServerResponseNotification('Error enabling API key: ' + error.message);
+        });
 }
 
 function updateCurrentKey(key) {

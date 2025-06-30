@@ -14,12 +14,17 @@ logger = logging.getLogger(__name__)
 def get_api_key() -> str:
     """
     Dependency that provides an active Surfe API key.
-    FIXED: Removed dependency on surfe_client to avoid import issues.
-    Now uses a simple approach with environment variables or fallback.
+    Now prioritizes the manually selected API key from surfe_client._last_api_key_used.
+    Falls back to rotation or environment keys if no manual selection.
     """
     try:
         # Import here to avoid circular imports
-        from utils.api_client import SURFE_API_KEYS, api_key_manager
+        from utils.api_client import SURFE_API_KEYS, api_key_manager, surfe_client
+        
+        # Use manually selected key if set and available
+        last_key = surfe_client.get_last_successful_key()
+        if last_key:
+            return last_key
         
         if not SURFE_API_KEYS:
             logger.error("No Surfe API keys available in dependencies.")
