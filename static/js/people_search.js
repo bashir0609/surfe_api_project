@@ -3,6 +3,9 @@
 // Global variables
 let currentResults = [];
 let currentSearchResults = []; // Global
+// CSV domain filtering variables - minimal approach
+let peopleIncludeDomains = [];
+let peopleExcludeDomains = [];
 
 // Create people search page content with v2 API structure
 function createPeopleSearchPage() {
@@ -453,7 +456,10 @@ function displayResults(data) {
     }
     
     // Store results for CSV download
-    currentResults = peopleArray;
+    // Apply domain filters before storing results
+    const filteredResults = applyDomainFiltersToResults(peopleArray);
+    currentResults = filteredResults;
+    peopleArray = filteredResults; // Update display array
     console.log('📊 Stored search results for CSV:', currentResults.length, 'people');
     
     if (peopleArray.length === 0) {
@@ -709,6 +715,9 @@ fetch("https://api.surfe.com/v2/people/search", {
             }
         });
     }
+
+    // Initialize CSV functionality
+    initializePeopleSearchCSV();
 }
 
 // Utility functions
@@ -805,7 +814,145 @@ function convertV2ToV1(v2Payload) {
     return v1Payload;
 }
 
+// Simple CSV initialization - uses only shared.js functions
+function initializePeopleSearchCSV() {
+    console.log('👥 Initializing people search CSV...');
+    
+    // Check if shared.js is available
+    if (typeof createCSVUploadComponent !== 'function') {
+        console.warn('⚠️ shared.js not loaded - CSV functionality disabled');
+        return;
+    }
+    
+    // Create upload components using shared.js
+    createCSVUploadComponent('people-include-domains-upload', function(csvData, file) {
+        if (csvData.items && csvData.items.length > 0) {
+            peopleIncludeDomains = [...new Set(csvData.items.map(item => item.toLowerCase().trim()))];
+            updatePeopleFilterDisplay();
+            console.log('✅ Include domains loaded:', peopleIncludeDomains.length);
+        }
+    }, {
+        title: 'Target Specific Companies',
+        description: 'Upload CSV with company domains to target',
+        simple: true
+    });
+    
+    createCSVUploadComponent('people-exclude-domains-upload', function(csvData, file) {
+        if (csvData.items && csvData.items.length > 0) {
+            peopleExcludeDomains = [...new Set(csvData.items.map(item => item.toLowerCase().trim()))];
+            updatePeopleFilterDisplay();
+            console.log('✅ Exclude domains loaded:', peopleExcludeDomains.length);
+        }
+    }, {
+        title: 'Exclude Company Domains', 
+        description: 'Upload CSV with company domains to exclude',
+        simple: true
+    });
+    
+    console.log('✅ People search CSV initialized');
+}
+
+// Simple filter display update
+function updatePeopleFilterDisplay() {
+    // Update search button if filters are active
+    const searchButton = document.querySelector('button[type="submit"]');
+    if (searchButton) {
+        const filterText = [];
+        if (peopleIncludeDomains.length > 0) filterText.push(`+${peopleIncludeDomains.length}`);
+        if (peopleExcludeDomains.length > 0) filterText.push(`-${peopleExcludeDomains.length}`);
+        
+        const baseText = '🔍 Search People';
+        searchButton.textContent = filterText.length > 0 ? 
+            `${baseText} (${filterText.join('/')})` : 
+            baseText;
+    }
+}
+
+// Simple domain filtering - uses shared.js cleanDomain if available
+function applyDomainFiltersToResults(results) {
+    if (!results || results.length === 0) return results;
+    if (peopleIncludeDomains.length === 0 && peopleExcludeDomains.length === 0) return results;
+    
+    let filtered = results;
+    
+    // Apply include filter
+    if (peopleIncludeDomains.length > 0) {
+        filtered = filtered.filter(person => {
+            const domain = person.companyDomain || '';
+            const cleanedDomain = typeof cleanDomain === 'function' ? cleanDomain(domain) : domain.toLowerCase();
+            return peopleIncludeDomains.includes(cleanedDomain);
+        });
+    }
+    
+    // Apply exclude filter
+    if (peopleExcludeDomains.length > 0) {
+        filtered = filtered.filter(person => {
+            const domain = person.companyDomain || '';
+            const cleanedDomain = typeof cleanDomain === 'function' ? cleanDomain(domain) : domain.toLowerCase();
+            return !peopleExcludeDomains.includes(cleanedDomain);
+        });
+    }
+    
+    console.log(`🔍 Domain filters applied: ${results.length} → ${filtered.length}`);
+    return filtered;
+}
+
+// Enhanced export using shared.js
+function exportFilteredPeopleResults() {
+    if (!currentResults || currentResults.length === 0) {
+        if (typeof showError === 'function') {
+            showError('No search results to export');
+        } else {
+            alert('No search results to export');
+        }
+        return;
+    }
+    
+    // Apply filters to current results
+    const filteredResults = applyDomainFiltersToResults(currentResults);
+    
+    if (filteredResults.length === 0) {
+        if (typeof showError === 'function') {
+            showError('No results after applying filters');
+        } else {
+            alert('No results after applying filters');
+        }
+        return;
+    }
+    
+    // Use shared.js export if available, otherwise fallback to existing
+    if (typeof exportToCSV === 'function') {
+        const timestamp = new Date().toISOString().split('T')[0];
+        exportToCSV(filteredResults, `people_search_${timestamp}.csv`);
+        
+        // Log activity if available
+        if (typeof logActivity === 'function') {
+            logActivity('People Search Export', `Exported ${filteredResults.length} people`, filteredResults.length);
+        }
+    } else {
+        // Fallback to existing function
+        downloadPeopleCSV();
+    }
+}
+
+// Global functions for HTML buttons
+window.clearPeopleIncludeDomains = function() {
+    peopleIncludeDomains = [];
+    updatePeopleFilterDisplay();
+    console.log('🧹 Include domains cleared');
+};
+
+window.clearPeopleExcludeDomains = function() {
+    peopleExcludeDomains = [];
+    updatePeopleFilterDisplay();
+    console.log('🧹 Exclude domains cleared');
+};
+
+window.exportFilteredPeopleResults = exportFilteredPeopleResults;
+
+
 console.log('People search.js (Surfe API v2) loaded successfully');
+console.log('👥 People search with CSV filtering loaded');
 
 // After search completes
 // await logActivity('people_search', `Found ${peopleCount} people`, peopleCount);
