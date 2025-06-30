@@ -109,7 +109,7 @@ async def check_api_keys_middleware(request: Request, call_next):
     # Skip for static files and root route
     if (request.url.path.startswith("/static/") or 
         request.url.path == "/" or
-        request.url.path == "/favicon.ico"):
+        request.url.path == "/static/favicon.ico"):
         response = await call_next(request)
         return response
     
