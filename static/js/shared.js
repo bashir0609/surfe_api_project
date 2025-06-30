@@ -103,6 +103,32 @@ function hideError(elementId = 'error-message') {
     }
 }
 
+// New: Show notification when no API key is selected
+function showNoApiKeySelectedNotification() {
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded shadow-lg z-50';
+    notification.textContent = '⚠️ No API key selected. Please select an API key in the settings page.';
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 5000);
+}
+
+// New: Show server response notification (e.g., quota exceeded)
+function showServerResponseNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg z-50';
+    notification.textContent = `⚠️ Server response: ${message}`;
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 7000);
+}
+
 // FIXED: Create enable button for disabled API key - Added missing closing brace
 function createEnableApiKeyButton(maskedKey, onClickHandler) {
     const button = document.createElement('button');
