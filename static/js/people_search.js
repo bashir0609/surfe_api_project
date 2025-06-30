@@ -1438,7 +1438,7 @@ function initPeopleSearch() {
 
 
 
-            console.log('Surfe API v2 payload (matching Streamlit structure):', JSON.stringify(payload, null, 2));
+            console.log('Surfe API v2 payload:', JSON.stringify(payload, null, 2));
 
 
 
