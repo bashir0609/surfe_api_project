@@ -53,10 +53,9 @@
                                     class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
                                 📥 Export Dashboard Data
                             </button>
-                            <button id="export-dashboard-data" onclick="exportDashboardData()">
-                                📥 Export Dashboard Data
-                            </button>
-
+                            <button onclick="exportCSVUsage()" 
+                                    class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 ml-4">
+                                📈 Export CSV Usage
                             <button onclick="exportCSVActivityHistory()">
                                 📊 Export CSV Activity History  
                             </button>
@@ -175,10 +174,10 @@
         console.log('🔧 Check Network tab if files are 404ing');
 
         // In other files, use enhanced logging:
-        await logCSVActivity('People CSV Upload', `Uploaded ${count} people`, count, {
-            filename: file.name,
-            fileSize: file.size
-        });
+        // await logCSVActivity('People CSV Upload', `Uploaded ${count} people`, count, {
+        //     filename: file.name,
+        //     fileSize: file.size
+        // });
     </script>
 </body>
 </html>
