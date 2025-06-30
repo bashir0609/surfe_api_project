@@ -140,7 +140,8 @@ function createPeopleSearchPage() {
                                     type="text" 
                                     id="people-departments" 
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" 
-                                    placeholder="Management, Engineering, Sales">
+                                    placeholder="Management, Engineering, Sales" 
+                                    value="Marketing and Advertising">
                                 <p class="text-xs text-gray-500 mt-1">Comma-separated departments</p>
                             </div>
                             
