@@ -387,14 +387,31 @@ function buildApiPayload() {
     }
     
     const companyDomains = stringToArray(document.getElementById('company-domains').value);
-    if (companyDomains.length > 0) {
-        companiesFilters.domains = companyDomains.map(d => d.trim());
+    const manualDomains = companyDomains.map(d => d.trim());
+
+    // FIXED: Merge CSV include domains with manual domains
+    const allIncludeDomains = [...manualDomains];
+    if (peopleIncludeDomains.length > 0) {
+        allIncludeDomains.push(...peopleIncludeDomains);
+        console.log('🔍 Including CSV domains in API request:', peopleIncludeDomains);
     }
-    
+    if (allIncludeDomains.length > 0) {
+        companiesFilters.domains = [...new Set(allIncludeDomains)]; // Remove duplicates
+    }
+
     const companyDomainsExcluded = stringToArray(document.getElementById('company-domains-excluded').value);
-    if (companyDomainsExcluded.length > 0) {
-        companiesFilters.domainsExcluded = companyDomainsExcluded.map(d => d.trim());
+    const manualExcludeDomains = companyDomainsExcluded.map(d => d.trim());
+
+    // FIXED: Merge CSV exclude domains with manual exclude domains  
+    const allExcludeDomains = [...manualExcludeDomains];
+    if (peopleExcludeDomains.length > 0) {
+        allExcludeDomains.push(...peopleExcludeDomains);
+        console.log('❌ Excluding CSV domains in API request:', peopleExcludeDomains);
     }
+    if (allExcludeDomains.length > 0) {
+        companiesFilters.domainsExcluded = [...new Set(allExcludeDomains)]; // Remove duplicates
+    }
+
     
     const companyIndustries = stringToArray(document.getElementById('industries').value);
     if (companyIndustries.length > 0) {
