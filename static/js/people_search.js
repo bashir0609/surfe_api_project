@@ -496,7 +496,7 @@ function displayResults(data) {
 
     // Log activity to dashboard
     if (data && data.people && data.people.length > 0) {
-        logActivity('people_enrichment', `Enriched ${data.people.length} people`, data.people.length);
+        logActivity('people_search', `Found ${peopleArray.length} people`, peopleArray.length);
     }
     
     // Store results for CSV download and apply domain filters
