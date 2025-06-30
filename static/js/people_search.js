@@ -25,131 +25,71 @@ function createPeopleSearchPage() {
         <div class="max-w-6xl mx-auto">
 
             <div class="mb-8">
-
-                <h1 class="text-2xl font-bold text-gray-900 mb-2">People Search - Surfe API v2</h1>
-
+                <h1 class="text-2xl font-bold text-gray-900 mb-2">People Search</h1>
                 <p class="text-gray-600">Find people using company and people filters with enhanced v2 API capabilities.</p>
-
             </div>
-
-
-
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-
-                <h3 class="text-yellow-800 font-semibold mb-2">⚠️ API Configuration</h3>
-
-                <p class="text-yellow-700 text-sm">This uses Surfe API v2. Ensure your backend is configured to handle the new API structure.</p>
-
-            </div>
-
-
 
             <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-
                 <form id="api-form">
 
+                    // Company Filters
                     <div class="mb-8">
-
                         <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">🏢 Company Filters</h3>
 
-                        
-
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-
+                        
+                            // company-countries
                             <div class="autocomplete-container">
-
                                 <label for="company-countries" class="block text-sm font-medium text-gray-700 mb-2">Countries</label>
-
                                 <input 
-
                                     type="text" 
-
                                     id="company-countries" 
-
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" 
-
                                     placeholder="fr, us, uk">
-
                                 <p class="text-xs text-gray-500 mt-1">Comma-separated country codes</p>
-
                             </div>
-
                             
-
+                            // company-domains
                             <div>
-
                                 <label for="company-domains" class="block text-sm font-medium text-gray-700 mb-2">Domains</label>
-
                                 <input 
-
                                     type="text" 
-
                                     id="company-domains" 
-
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" 
-
                                     placeholder="surfe.com, google.com">
-
                                 <p class="text-xs text-gray-500 mt-1">Comma-separated domains</p>
-
                             </div>
 
                             
-
+                            // company-domains-excluded
                             <div>
-
                                 <label for="company-domains-excluded" class="block text-sm font-medium text-gray-700 mb-2">Excluded Domains</label>
-
                                 <input 
-
                                     type="text" 
-
                                     id="company-domains-excluded" 
-
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" 
-
                                     placeholder="spam.com, old.com">
-
                                 <p class="text-xs text-gray-500 mt-1">Domains to exclude</p>
-
                             </div>
-
                             
-
+                            // industries
                             <div class="autocomplete-container">
-
                                 <label for="industries" class="block text-sm font-medium text-gray-700 mb-2">
-
                                     Industries <span class="text-gray-500">(select one or more)</span>
-
                                 </label>
-
                                 <input type="text" id="industries"
-
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-
                                     placeholder="Type to search industries... (e.g. music, saas, fintech)">
-
                             </div>
-
-                            
 
                             <div>
-
                                 <label for="company-names" class="block text-sm font-medium text-gray-700 mb-2">Company Names</label>
-
                                 <input 
-
                                     type="text" 
-
                                     id="company-names" 
-
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" 
-
                                     placeholder="Surfe, Google">
-
                                 <p class="text-xs text-gray-500 mt-1">Comma-separated company names</p>
-
                             </div>
 
                         </div>
