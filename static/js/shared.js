@@ -416,10 +416,13 @@ function createSidebar() {
                 
                 <div class="pt-4">
                     <h2 class="nav-section-title">Other</h2>
-                    <a href="/pages/diagnostics" class="nav-link ${currentPath.includes('diagnostics') ? 'active' : ''}">
-                        <span>🔧 API Diagnostics</span>
-                    </a>
-                </div>
+                <a href="/pages/diagnostics" class="nav-link ${currentPath.includes('diagnostics') ? 'active' : ''}">
+                    <span>🔧 API Diagnostics</span>
+                </a>
+                <a href="/pages/settings" class="nav-link ${currentPath.includes('settings') ? 'active' : ''}">
+                    <span>⚙️ API Settings</span>
+                </a>
+            </div>
             </nav>
         </aside>
     `;

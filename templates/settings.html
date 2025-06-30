@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Surfe API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="flex h-screen">
+        <!-- Sidebar Container -->
+        <div id="sidebar-container"></div>
+        
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="bg-white border-b border-gray-200">
+                <div class="p-4">
+                    <h1 class="text-xl font-bold text-gray-800">API Settings</h1>
+                </div>
+            </header>
+            
+            <main class="flex-1 p-6 md:p-8 overflow-y-auto">
+                <div class="max-w-4xl mx-auto">
+                    <!-- API Key Selection -->
+                    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">🔑 API Key Selection</h2>
+                        
+                        <div class="space-y-4">
+                            <!-- Current API Key -->
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h3 class="text-sm font-medium text-gray-700 mb-2">Currently Active Key:</h3>
+                                <div id="current-key" class="text-lg font-mono bg-gray-100 p-2 rounded">
+                                    Loading...
+                                </div>
+                            </div>
+
+                            <!-- Available Keys -->
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-700 mb-2">Available API Keys:</h3>
+                                <div id="api-keys-list" class="space-y-2">
+                                    <!-- Keys will be populated here -->
+                                </div>
+                            </div>
+
+                            <!-- Add New Key -->
+                            <div class="border-t pt-4 mt-4">
+                                <h3 class="text-sm font-medium text-gray-700 mb-2">Add New API Key:</h3>
+                                <div class="flex gap-2">
+                                    <input type="text" id="new-key-input" 
+                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                           placeholder="Enter new API key">
+                                    <button onclick="addNewKey()" 
+                                            class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+                                        Add Key
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Key Status -->
+                    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">📊 Key Status</h2>
+                        <div id="key-status" class="space-y-4">
+                            <!-- Status will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Test Selected Key -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">🧪 Test API Key</h2>
+                        <button onclick="testSelectedKey()" 
+                                class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                            Test Current Key
+                        </button>
+                        <div id="test-results" class="mt-4">
+                            <!-- Test results will appear here -->
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Load JavaScript files -->
+    <script src="/static/js/shared.js"></script>
+    <script src="/static/js/settings.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Render sidebar
+            if (typeof createSidebar === 'function') {
+                document.getElementById('sidebar-container').innerHTML = createSidebar();
+            }
+            
+            // Initialize settings page
+            if (typeof initSettings === 'function') {
+                initSettings();
+            }
+        });
+    </script>
+</body>
+</html>

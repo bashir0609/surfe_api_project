@@ -338,19 +338,15 @@ async def get_api_statistics():
         return {
             "success": True,
             "data": {
-                "statistics": stats,
-                "configuration": {
-                    "base_url": SURFE_API_BASE_URL,
-                    "total_keys_configured": len(SURFE_API_KEYS)
-                },
-                "timestamp": datetime.now().isoformat()
+                "statistics": {
+                    "key_details": stats["key_details"],
+                    "last_key_used": surfe_client.get_last_api_key_masked()
+                }
             }
         }
     except Exception as e:
-        return {
-            "success": False,
-            "error": f"Failed to get API statistics: {str(e)}"
-        }
+        logger.error(f"Failed to get API statistics: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/test-endpoints", response_model=res_models.GenericResponse)
 async def test_different_endpoints():

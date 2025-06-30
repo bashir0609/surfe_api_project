@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from core.dependencies import get_api_key
-from api.routes import company_lookalikes, company_search, company_enrichment, people_search, people_enrichment, diagnostics, dashboard, data_quality_test
+from api.routes import company_lookalikes, company_search, company_enrichment, people_search, people_enrichment, diagnostics, dashboard, data_quality_test, settings
 
 print(f"DEBUG: main.py started. Current working directory: {os.getcwd()}")
 print(f"DEBUG: Value of SURFE_API_KEY_1: {os.getenv('SURFE_API_KEY_1')}")
@@ -86,6 +86,7 @@ app.include_router(people_enrichment.router)
 app.include_router(diagnostics.router)
 app.include_router(dashboard.router)
 app.include_router(data_quality_test.router)
+app.include_router(settings.router)
 
 # main.py - Updated root route with API key check
 @app.get("/", response_class=HTMLResponse)

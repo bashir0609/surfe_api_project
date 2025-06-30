@@ -136,51 +136,60 @@ api_key_manager = ApiKeyManager()
 def load_api_keys():
     """Load API keys from environment variables with multiple fallback methods"""
     keys_found = []
-    
-    # Method 1: Try numbered environment variables
-    ENV_VAR_KEY_NAMES = [f"SURFE_API_KEY_{i}" for i in range(1, 11)]  # Check up to 10 keys
-    
-    for env_var_name in ENV_VAR_KEY_NAMES:
-        api_key_value = os.getenv(env_var_name)
-        if api_key_value and api_key_value.strip():
-            keys_found.append(api_key_value.strip())
-            logger.info(f"Loaded API key from {env_var_name}")
-    
-    # Method 2: Try single environment variable
-    single_key = os.getenv("SURFE_API_KEY")
-    if single_key and single_key.strip():
-        keys_found.append(single_key.strip())
-        logger.info("Loaded API key from SURFE_API_KEY")
-    
-    # Method 3: Try comma-separated list
-    keys_list = os.getenv("SURFE_API_KEYS")
-    if keys_list:
-        for key in keys_list.split(','):
-            key = key.strip()
-            if key:
-                keys_found.append(key)
-        logger.info(f"Loaded {len(keys_list.split(','))} API keys from SURFE_API_KEYS")
-    
-    # Method 4: Fallback - try to load from JSON file (local development)
-    if not keys_found:
-        try:
-            json_file_path = os.path.join(os.path.dirname(__file__), '..', 'api_keys.json')
-            if os.path.exists(json_file_path):
-                with open(json_file_path, 'r') as f:
-                    keys_data = json.load(f)
-                    for key, value in keys_data.items():
-                        if key.startswith("surfe_api_key") and isinstance(value, str):
-                            keys_found.append(value.strip())
-                logger.info(f"Loaded {len(keys_found)} API keys from api_keys.json")
-        except Exception as e:
-            logger.warning(f"Could not load from api_keys.json: {e}")
-    
+
+    # Check if running in Vercel environment
+    if os.getenv("VERCEL") or os.getenv("VERCEL_ENV"):
+        # Load keys from Vercel environment variables
+        ENV_VAR_KEY_NAMES = [f"SURFE_API_KEY_{i}" for i in range(1, 11)]  # Check up to 10 keys
+        for env_var_name in ENV_VAR_KEY_NAMES:
+            api_key_value = os.getenv(env_var_name)
+            if api_key_value and api_key_value.strip():
+                keys_found.append(api_key_value.strip())
+                logger.info(f"Loaded API key from Vercel env var {env_var_name}")
+    else:
+        # Method 1: Try numbered environment variables
+        ENV_VAR_KEY_NAMES = [f"SURFE_API_KEY_{i}" for i in range(1, 11)]  # Check up to 10 keys
+        for env_var_name in ENV_VAR_KEY_NAMES:
+            api_key_value = os.getenv(env_var_name)
+            if api_key_value and api_key_value.strip():
+                keys_found.append(api_key_value.strip())
+                logger.info(f"Loaded API key from {env_var_name}")
+
+        # Method 2: Try single environment variable
+        single_key = os.getenv("SURFE_API_KEY")
+        if single_key and single_key.strip():
+            keys_found.append(single_key.strip())
+            logger.info("Loaded API key from SURFE_API_KEY")
+
+        # Method 3: Try comma-separated list
+        keys_list = os.getenv("SURFE_API_KEYS")
+        if keys_list:
+            for key in keys_list.split(','):
+                key = key.strip()
+                if key:
+                    keys_found.append(key)
+            logger.info(f"Loaded {len(keys_list.split(','))} API keys from SURFE_API_KEYS")
+
+        # Method 4: Fallback - try to load from JSON file (local development)
+        if not keys_found:
+            try:
+                json_file_path = os.path.join(os.path.dirname(__file__), '..', 'api_keys.json')
+                if os.path.exists(json_file_path):
+                    with open(json_file_path, 'r') as f:
+                        keys_data = json.load(f)
+                        for key, value in keys_data.items():
+                            if key.startswith("surfe_api_key") and isinstance(value, str):
+                                keys_found.append(value.strip())
+                    logger.info(f"Loaded {len(keys_found)} API keys from api_keys.json")
+            except Exception as e:
+                logger.warning(f"Could not load from api_keys.json: {e}")
+
     # Remove duplicates while preserving order
     unique_keys = []
     for key in keys_found:
         if key not in unique_keys:
             unique_keys.append(key)
-    
+
     return unique_keys
 
 # Load the keys
