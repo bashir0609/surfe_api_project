@@ -32,13 +32,11 @@ function createPeopleSearchPage() {
             <div class="bg-white rounded-lg shadow-md p-6 mb-8">
                 <form id="api-form">
 
-                    // Company Filters
                     <div class="mb-8">
                         <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">🏢 Company Filters</h3>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                         
-                            // company-countries
                             <div class="autocomplete-container">
                                 <label for="company-countries" class="block text-sm font-medium text-gray-700 mb-2">Countries</label>
                                 <input 
@@ -49,7 +47,6 @@ function createPeopleSearchPage() {
                                 <p class="text-xs text-gray-500 mt-1">Comma-separated country codes</p>
                             </div>
                             
-                            // company-domains
                             <div>
                                 <label for="company-domains" class="block text-sm font-medium text-gray-700 mb-2">Domains</label>
                                 <input 
@@ -61,7 +58,6 @@ function createPeopleSearchPage() {
                             </div>
 
                             
-                            // company-domains-excluded
                             <div>
                                 <label for="company-domains-excluded" class="block text-sm font-medium text-gray-700 mb-2">Excluded Domains</label>
                                 <input 
@@ -72,7 +68,6 @@ function createPeopleSearchPage() {
                                 <p class="text-xs text-gray-500 mt-1">Domains to exclude</p>
                             </div>
                             
-                            // industries
                             <div class="autocomplete-container">
                                 <label for="industries" class="block text-sm font-medium text-gray-700 mb-2">
                                     Industries <span class="text-gray-500">(select one or more)</span>
