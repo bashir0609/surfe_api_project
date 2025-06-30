@@ -1099,25 +1099,3 @@ function extractEmailsFromCSV(csvData) {
     // Remove duplicates
     return [...new Set(emails)];
 }
-
-// Add to console for debugging
-console.log('📊 CSV functionality loaded in shared.js');
-
-// Export notification
-console.log(`
-🎉 CSV Functions Available:
-• parseCSVFile(file) - Parse full CSV with headers
-• parseSimpleCSV(file) - Parse simple single-column CSV
-• generateCSV(data, filename, headers) - Generate CSV content
-• downloadCSV(content, filename) - Download CSV file
-• exportToCSV(data, filename, headers) - Combined export
-• validateCSVData(data) - Validate data structure
-• setupCSVFileInput(element, callback, options) - Setup file input
-• generateCSVPreview(data, maxRows, isSimple) - Generate preview HTML
-• createCSVUploadComponent(id, callback, options) - Create upload UI
-• extractCSVColumns(data, columns) - Extract specific columns
-• filterCSVData(data, filterFn) - Filter CSV data
-• mergeCSVWithResults(csv, results, key) - Merge with API results
-• extractDomainsFromCSV(data) - Extract domains from CSV
-• extractEmailsFromCSV(data) - Extract emails from CSV
-`);
