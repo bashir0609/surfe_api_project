@@ -342,7 +342,27 @@ Check console for direct API call examples when backend is unavailable.
             console.error('Unhandled promise rejection:', e.reason);
 
         });
-
+        
+        // Use the notification function
+        function handleApiError(error) {
+            showServerResponseNotification('API quota exceeded');
+            // or
+            showServerResponseNotification('Invalid API key');
+            // or  
+            showServerResponseNotification(error.message);
+        }
+        
+        // Example usage in API calls
+        async function callApi() {
+            try {
+                const response = await fetch('/api/endpoint');
+                if (!response.ok) {
+                    showServerResponseNotification('Server error: ' + response.status);
+                }
+            } catch (error) {
+                showServerResponseNotification('Network error occurred');
+            }
+        }
     </script>
 
 </body>
