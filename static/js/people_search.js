@@ -2050,4 +2050,4 @@ console.log('3. ✅ Enhanced domain filtering with multiple field checks');
 
 console.log('4. ✅ Smart domain detection using shared.js extractDomainsFromCSV');
 
-console.log('5. ✅ Integrated CSV functionality with shared.js utilities'
+console.log('5. ✅ Integrated CSV functionality with shared.js utilities');
