@@ -53,6 +53,13 @@
                                     class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
                                 📥 Export Dashboard Data
                             </button>
+                            <button id="export-dashboard-data" onclick="exportDashboardData()">
+                                📥 Export Dashboard Data
+                            </button>
+
+                            <button onclick="exportCSVActivityHistory()">
+                                📊 Export CSV Activity History  
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -166,6 +173,12 @@
         console.log('🎯 Dashboard Template Loaded');
         console.log('📁 Static files should load from:', window.location.origin + '/static/');
         console.log('🔧 Check Network tab if files are 404ing');
+
+        // In other files, use enhanced logging:
+        await logCSVActivity('People CSV Upload', `Uploaded ${count} people`, count, {
+            filename: file.name,
+            fileSize: file.size
+        });
     </script>
 </body>
 </html>
