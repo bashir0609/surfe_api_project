@@ -624,35 +624,35 @@ function initializeDashboardCSV() {
 }
 
 // Enhanced activity logging for CSV operations
-async function logCSVActivity(activityType, description, count = 1, additionalData = {}) {
-    try {
-        // Use existing logActivity function but with CSV-specific enhancements
-        await logActivity(activityType, description, count);
+// async function logCSVActivity(activityType, description, count = 1, additionalData = {}) {
+//     try {
+//         // Use existing logActivity function but with CSV-specific enhancements
+//         await logActivity(activityType, description, count);
         
-        // Store CSV-specific data in localStorage for analytics
-        const csvActivities = JSON.parse(localStorage.getItem('csv_activities') || '[]');
-        csvActivities.push({
-            timestamp: new Date().toISOString(),
-            type: activityType,
-            description: description,
-            count: count,
-            ...additionalData
-        });
+//         // Store CSV-specific data in localStorage for analytics
+//         const csvActivities = JSON.parse(localStorage.getItem('csv_activities') || '[]');
+//         csvActivities.push({
+//             timestamp: new Date().toISOString(),
+//             type: activityType,
+//             description: description,
+//             count: count,
+//             ...additionalData
+//         });
         
-        // Keep only last 100 CSV activities
-        if (csvActivities.length > 100) {
-            csvActivities.splice(0, csvActivities.length - 100);
-        }
+//         // Keep only last 100 CSV activities
+//         if (csvActivities.length > 100) {
+//             csvActivities.splice(0, csvActivities.length - 100);
+//         }
         
-        localStorage.setItem('csv_activities', JSON.stringify(csvActivities));
+//         localStorage.setItem('csv_activities', JSON.stringify(csvActivities));
         
-        // Update analytics immediately
-        updateCSVAnalytics();
+//         // Update analytics immediately
+//         updateCSVAnalytics();
         
-    } catch (error) {
-        console.error('Failed to log CSV activity:', error);
-    }
-}
+//     } catch (error) {
+//         console.error('Failed to log CSV activity:', error);
+//     }
+// }
 
 // Export CSV activity history
 function exportCSVActivityHistory() {
