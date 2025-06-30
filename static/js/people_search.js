@@ -174,7 +174,7 @@ function createPeopleSearchPage() {
                                     type="number" 
                                     id="limit" 
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" 
-                                    value="10" 
+                                    value="100" 
                                     min="1" 
                                     max="100">
                                 <p class="text-xs text-gray-500 mt-1">Max people to return (1-100)</p>
@@ -344,9 +344,9 @@ function stringToArray(str) {
 // Build API payload according to Surfe API v2 structure (based on working Streamlit version)
 function buildApiPayload() {
     const payload = {
-        limit: parseInt(document.getElementById('limit').value) || 10,
+        limit: parseInt(document.getElementById('limit').value) || 100,
         pageToken: document.getElementById('page-token').value.trim() || "",
-        peoplePerCompany: parseInt(document.getElementById('people-per-company').value) || 5,
+        peoplePerCompany: parseInt(document.getElementById('people-per-company').value) || 1,
     };
     
     // Build company filters (only add if we have actual values)
