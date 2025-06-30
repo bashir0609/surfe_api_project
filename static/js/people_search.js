@@ -1,4 +1,4 @@
-// people_search.js - Updated for Surfe API v2
+// people_search.js - Updated for Surfe API v2 (FIXED VERSION)
 
 // Global variables
 let currentResults = [];
@@ -207,6 +207,29 @@ function createPeopleSearchPage() {
                         </div>
                     </div>
 
+                    <!-- CSV Domain Filtering Section -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">📂 CSV Domain Filtering</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div id="people-include-domains-upload"></div>
+                            <div id="people-exclude-domains-upload"></div>
+                        </div>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <button type="button" onclick="clearPeopleIncludeDomains()" 
+                                    class="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600 transition-colors">
+                                Clear Include List
+                            </button>
+                            <button type="button" onclick="clearPeopleExcludeDomains()" 
+                                    class="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600 transition-colors">
+                                Clear Exclude List
+                            </button>
+                            <button type="button" onclick="exportFilteredPeopleResults()" 
+                                    class="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors">
+                                Export Filtered Results
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="mb-6">
                         <h4 class="text-sm font-medium text-gray-700 mb-3">Quick Examples:</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -352,6 +375,9 @@ function buildApiPayload() {
         peoplePerCompany: parseInt(document.getElementById('people-per-company').value) || 1,
     };
     
+    // FIXED: Add debug logging for people per company
+    console.log(`🔧 People per company setting: ${payload.peoplePerCompany}`);
+    
     // Build company filters (only add if we have actual values)
     const companiesFilters = {};
     
@@ -455,8 +481,7 @@ function displayResults(data) {
         logActivity('people_enrichment', `Enriched ${data.people.length} people`, data.people.length);
     }
     
-    // Store results for CSV download
-    // Apply domain filters before storing results
+    // Store results for CSV download and apply domain filters
     const filteredResults = applyDomainFiltersToResults(peopleArray);
     currentResults = filteredResults;
     peopleArray = filteredResults; // Update display array
@@ -655,7 +680,6 @@ function downloadPeopleCSV() {
     console.log('✅ CSV download initiated');
 }
 
-
 // Initialize people search functionality
 function initPeopleSearch() {
     initializeAutocompleteForPage('people-search');
@@ -681,7 +705,7 @@ function initPeopleSearch() {
             showLoading();
             
             try {
-                // Try to make request to your backend endpoint first
+                // FIXED: Use shared.js makeRequest function
                 let response = await makeRequest('/api/v2/people/search', 'POST', payload);
                 
                 if (!response.success) {
@@ -718,59 +742,6 @@ fetch("https://api.surfe.com/v2/people/search", {
 
     // Initialize CSV functionality
     initializePeopleSearchCSV();
-}
-
-// Utility functions
-function showLoading() {
-    document.getElementById('loading-indicator').classList.remove('hidden');
-    document.getElementById('error-message').classList.add('hidden');
-    document.getElementById('results-container').innerHTML = '';
-}
-
-function hideLoading() {
-    document.getElementById('loading-indicator').classList.add('hidden');
-}
-
-function showError(message) {
-    const errorDiv = document.getElementById('error-message');
-    const errorText = document.getElementById('error-text');
-    errorText.textContent = typeof message === 'string' ? message : JSON.stringify(message, null, 2);
-    errorDiv.classList.remove('hidden');
-    hideLoading();
-}
-
-// Enhanced makeRequest function with better error handling
-async function makeRequest(url, method = 'GET', data = null) {
-    try {
-        const config = {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        };
-        
-        if (data) {
-            config.body = JSON.stringify(data);
-        }
-        
-        const response = await fetch(url, config);
-        const result = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(result.detail || `HTTP error! status: ${response.status}`);
-        }
-        
-        return {
-            success: true,
-            data: result
-        };
-    } catch (error) {
-        console.error('Request failed:', error);
-        return {
-            success: false,
-            detail: error.message
-        };
-    }
 }
 
 // Convert v2 payload to v1 format for backward compatibility
@@ -814,7 +785,7 @@ function convertV2ToV1(v2Payload) {
     return v1Payload;
 }
 
-// Simple CSV initialization - uses only shared.js functions
+// FIXED: Enhanced CSV initialization using shared.js functions
 function initializePeopleSearchCSV() {
     console.log('👥 Initializing people search CSV...');
     
@@ -824,35 +795,71 @@ function initializePeopleSearchCSV() {
         return;
     }
     
-    // Create upload components using shared.js
+    // FIXED: Create upload components with improved domain extraction
     createCSVUploadComponent('people-include-domains-upload', function(csvData, file) {
-        if (csvData.items && csvData.items.length > 0) {
-            peopleIncludeDomains = [...new Set(csvData.items.map(item => item.toLowerCase().trim()))];
-            updatePeopleFilterDisplay();
-            console.log('✅ Include domains loaded:', peopleIncludeDomains.length);
+        console.log('📄 Processing include domains CSV:', csvData);
+        
+        // FIXED: Use extractDomainsFromCSV for smart domain detection
+        if (typeof extractDomainsFromCSV === 'function' && csvData.data) {
+            try {
+                const domains = extractDomainsFromCSV(csvData);
+                peopleIncludeDomains = [...new Set(domains.map(d => d.toLowerCase().trim()))];
+                console.log('✅ Include domains extracted:', peopleIncludeDomains.length, peopleIncludeDomains.slice(0, 5));
+            } catch (error) {
+                console.warn('⚠️ Domain extraction failed, using simple method:', error);
+                // Fallback to simple extraction
+                if (csvData.items && csvData.items.length > 0) {
+                    peopleIncludeDomains = [...new Set(csvData.items.map(item => cleanDomain(item)))];
+                }
+            }
+        } else if (csvData.items && csvData.items.length > 0) {
+            // Simple extraction for basic CSV
+            peopleIncludeDomains = [...new Set(csvData.items.map(item => cleanDomain(item)))];
         }
+        
+        updatePeopleFilterDisplay();
+        console.log('✅ Include domains loaded:', peopleIncludeDomains.length);
     }, {
         title: 'Target Specific Companies',
         description: 'Upload CSV with company domains to target',
-        simple: true
+        simple: false, // FIXED: Allow smart detection
+        showPreview: true
     });
     
     createCSVUploadComponent('people-exclude-domains-upload', function(csvData, file) {
-        if (csvData.items && csvData.items.length > 0) {
-            peopleExcludeDomains = [...new Set(csvData.items.map(item => item.toLowerCase().trim()))];
-            updatePeopleFilterDisplay();
-            console.log('✅ Exclude domains loaded:', peopleExcludeDomains.length);
+        console.log('📄 Processing exclude domains CSV:', csvData);
+        
+        // FIXED: Use extractDomainsFromCSV for smart domain detection
+        if (typeof extractDomainsFromCSV === 'function' && csvData.data) {
+            try {
+                const domains = extractDomainsFromCSV(csvData);
+                peopleExcludeDomains = [...new Set(domains.map(d => d.toLowerCase().trim()))];
+                console.log('✅ Exclude domains extracted:', peopleExcludeDomains.length, peopleExcludeDomains.slice(0, 5));
+            } catch (error) {
+                console.warn('⚠️ Domain extraction failed, using simple method:', error);
+                // Fallback to simple extraction
+                if (csvData.items && csvData.items.length > 0) {
+                    peopleExcludeDomains = [...new Set(csvData.items.map(item => cleanDomain(item)))];
+                }
+            }
+        } else if (csvData.items && csvData.items.length > 0) {
+            // Simple extraction for basic CSV
+            peopleExcludeDomains = [...new Set(csvData.items.map(item => cleanDomain(item)))];
         }
+        
+        updatePeopleFilterDisplay();
+        console.log('✅ Exclude domains loaded:', peopleExcludeDomains.length);
     }, {
         title: 'Exclude Company Domains', 
         description: 'Upload CSV with company domains to exclude',
-        simple: true
+        simple: false, // FIXED: Allow smart detection
+        showPreview: true
     });
     
-    console.log('✅ People search CSV initialized');
+    console.log('✅ People search CSV initialized with smart domain detection');
 }
 
-// Simple filter display update
+// FIXED: Enhanced filter display update
 function updatePeopleFilterDisplay() {
     // Update search button if filters are active
     const searchButton = document.querySelector('button[type="submit"]');
@@ -866,38 +873,81 @@ function updatePeopleFilterDisplay() {
             `${baseText} (${filterText.join('/')})` : 
             baseText;
     }
+    
+    // FIXED: Show current filter status
+    console.log(`🔍 Domain filters updated: Include=${peopleIncludeDomains.length}, Exclude=${peopleExcludeDomains.length}`);
 }
 
-// Simple domain filtering - uses shared.js cleanDomain if available
+// FIXED: Enhanced domain filtering with better matching logic
 function applyDomainFiltersToResults(results) {
     if (!results || results.length === 0) return results;
     if (peopleIncludeDomains.length === 0 && peopleExcludeDomains.length === 0) return results;
+    
+    console.log(`🔍 Applying domain filters to ${results.length} results`);
+    console.log(`📋 Include domains: ${peopleIncludeDomains.length}`, peopleIncludeDomains.slice(0, 3));
+    console.log(`📋 Exclude domains: ${peopleExcludeDomains.length}`, peopleExcludeDomains.slice(0, 3));
     
     let filtered = results;
     
     // Apply include filter
     if (peopleIncludeDomains.length > 0) {
         filtered = filtered.filter(person => {
-            const domain = person.companyDomain || '';
-            const cleanedDomain = typeof cleanDomain === 'function' ? cleanDomain(domain) : domain.toLowerCase();
-            return peopleIncludeDomains.includes(cleanedDomain);
+            // FIXED: Check multiple possible domain fields
+            const domains = [
+                person.companyDomain,
+                person.domain,
+                person.company_domain,
+                person.website
+            ].filter(d => d);
+            
+            if (domains.length === 0) {
+                console.log('⚠️ No domain found for person:', person.firstName, person.lastName, person.companyName);
+                return false;
+            }
+            
+            return domains.some(domain => {
+                const cleanedDomain = typeof cleanDomain === 'function' ? cleanDomain(domain) : domain.toLowerCase();
+                const isIncluded = peopleIncludeDomains.includes(cleanedDomain);
+                if (isIncluded) {
+                    console.log(`✅ Include match: ${cleanedDomain} for ${person.firstName} ${person.lastName}`);
+                }
+                return isIncluded;
+            });
         });
+        console.log(`📊 After include filter: ${results.length} → ${filtered.length}`);
     }
     
     // Apply exclude filter
     if (peopleExcludeDomains.length > 0) {
+        const beforeExclude = filtered.length;
         filtered = filtered.filter(person => {
-            const domain = person.companyDomain || '';
-            const cleanedDomain = typeof cleanDomain === 'function' ? cleanDomain(domain) : domain.toLowerCase();
-            return !peopleExcludeDomains.includes(cleanedDomain);
+            // FIXED: Check multiple possible domain fields
+            const domains = [
+                person.companyDomain,
+                person.domain,
+                person.company_domain,
+                person.website
+            ].filter(d => d);
+            
+            if (domains.length === 0) return true; // Keep if no domain to check
+            
+            return !domains.some(domain => {
+                const cleanedDomain = typeof cleanDomain === 'function' ? cleanDomain(domain) : domain.toLowerCase();
+                const isExcluded = peopleExcludeDomains.includes(cleanedDomain);
+                if (isExcluded) {
+                    console.log(`❌ Exclude match: ${cleanedDomain} for ${person.firstName} ${person.lastName}`);
+                }
+                return isExcluded;
+            });
         });
+        console.log(`📊 After exclude filter: ${beforeExclude} → ${filtered.length}`);
     }
     
-    console.log(`🔍 Domain filters applied: ${results.length} → ${filtered.length}`);
+    console.log(`🎯 Final domain filtering result: ${results.length} → ${filtered.length}`);
     return filtered;
 }
 
-// Enhanced export using shared.js
+// FIXED: Enhanced export using shared.js
 function exportFilteredPeopleResults() {
     if (!currentResults || currentResults.length === 0) {
         if (typeof showError === 'function') {
@@ -920,10 +970,10 @@ function exportFilteredPeopleResults() {
         return;
     }
     
-    // Use shared.js export if available, otherwise fallback to existing
+    // FIXED: Use shared.js export if available, otherwise fallback to existing
     if (typeof exportToCSV === 'function') {
         const timestamp = new Date().toISOString().split('T')[0];
-        exportToCSV(filteredResults, `people_search_${timestamp}.csv`);
+        exportToCSV(filteredResults, `people_search_filtered_${timestamp}.csv`);
         
         // Log activity if available
         if (typeof logActivity === 'function') {
@@ -950,9 +1000,10 @@ window.clearPeopleExcludeDomains = function() {
 
 window.exportFilteredPeopleResults = exportFilteredPeopleResults;
 
-
-console.log('People search.js (Surfe API v2) loaded successfully');
-console.log('👥 People search with CSV filtering loaded');
-
-// After search completes
-// await logActivity('people_search', `Found ${peopleCount} people`, peopleCount);
+console.log('✅ People search.js (Surfe API v2) FIXED VERSION loaded successfully');
+console.log('🔧 FIXES APPLIED:');
+console.log('1. ✅ Removed duplicate functions (using shared.js)');
+console.log('2. ✅ Added debug logging for people per company parameter');
+console.log('3. ✅ Enhanced domain filtering with multiple field checks');
+console.log('4. ✅ Smart domain detection using shared.js extractDomainsFromCSV');
+console.log('5. ✅ Integrated CSV functionality with shared.js utilities');

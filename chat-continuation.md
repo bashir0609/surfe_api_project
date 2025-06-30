@@ -1,5 +1,8 @@
 # Implement CSV features
-https://claude.ai/public/artifacts/eac2f965-4fed-45cc-8410-2c1bf807f08b
+- https://claude.ai/public/artifacts/eac2f965-4fed-45cc-8410-2c1bf807f08b
+
+# People Search CSV
+- https://claude.ai/public/artifacts/2efdf33c-0f4c-445b-b8e9-5ef56297d5c2
 
 # Chat Continuation - Route Migration Project COMPLETE! 🎉
 
