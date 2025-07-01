@@ -16,6 +16,32 @@ let peopleExcludeDomains = [];
 
 
 
+// Utility function to clean and normalize domain strings
+
+function cleanDomain(domain) {
+
+    if (!domain || typeof domain !== 'string') return '';
+
+    domain = domain.trim().toLowerCase();
+
+    // Remove protocol if present
+
+    domain = domain.replace(/^https?:\/\//, '');
+
+    // Remove www. prefix
+
+    domain = domain.replace(/^www\./, '');
+
+    // Remove trailing slash
+
+    domain = domain.replace(/\/$/, '');
+
+    return domain;
+
+}
+
+
+
 // Create people search page content with v2 API structure
 
 function createPeopleSearchPage() {
@@ -1769,7 +1795,7 @@ function applyDomainFiltersToResults(results) {
 
             return domains.some(domain => {
 
-                const cleanedDomain = typeof cleanDomain === 'function' ? cleanDomain(domain) : domain.toLowerCase();
+                const cleanedDomain = cleanDomain(domain);
 
                 const isIncluded = peopleIncludeDomains.includes(cleanedDomain);
 
@@ -1821,7 +1847,7 @@ function applyDomainFiltersToResults(results) {
 
             return !domains.some(domain => {
 
-                const cleanedDomain = typeof cleanDomain === 'function' ? cleanDomain(domain) : domain.toLowerCase();
+                const cleanedDomain = cleanDomain(domain);
 
                 const isExcluded = peopleExcludeDomains.includes(cleanedDomain);
 
