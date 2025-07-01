@@ -413,6 +413,7 @@ const EMPLOYEE_PRESETS = [
 
 function createSidebar() {
     const currentPath = window.location.pathname;
+    const currentKey = localStorage.getItem('selectedApiKey') || 'No key selected';
 
     return `
         <aside class="w-64 bg-white text-gray-800 flex flex-col flex-shrink-0 border-r border-gray-200">
@@ -420,6 +421,10 @@ function createSidebar() {
                 <a href="/" class="flex items-center space-x-3">
                     <span class="text-xl font-bold tracking-tight text-gray-900">Surfe API</span>
                 </a>
+                <div class="mt-4 p-2 bg-gray-100 rounded text-sm text-gray-700">
+                    <strong>Currently Active Key:</strong>
+                    <div class="font-mono break-all">${currentKey}</div>
+                </div>
             </div>
             
             <nav class="mt-4 flex-1 px-2 space-y-1">
@@ -463,6 +468,7 @@ function createSidebar() {
         </aside>
     `;
 }
+
 
 // Domain validation utility
 function isValidDomain(domain) {

@@ -5,6 +5,11 @@ let availableKeys = [];
 
 async function initSettings() {
     console.log('Initializing settings page...');
+    // Try to load selected key from localStorage first
+    const savedKey = localStorage.getItem('selectedApiKey');
+    if (savedKey) {
+        updateCurrentKey(savedKey);
+    }
     await loadAPIKeys();
     updateKeyStatus();
 }
@@ -126,6 +131,8 @@ async function selectKey(maskedKey) {
         if (response.success) {
             showSuccess(`Selected API key: ${maskedKey}`);
             updateCurrentKey(maskedKey);
+            // Save selected key to localStorage for persistence
+            localStorage.setItem('selectedApiKey', maskedKey);
             console.log('Key selected successfully');
         } else {
             showError('Failed to select API key');
