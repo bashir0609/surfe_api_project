@@ -1651,65 +1651,63 @@ function initializePeopleSearchCSV() {
 
     
 
-    createCSVUploadComponent('people-exclude-domains-upload', function(csvData, file) {
-
-        console.log('📄 Processing exclude domains CSV:', csvData);
-
-        
-
-        // FIXED: Use extractDomainsFromCSV for smart domain detection
-
-        if (typeof extractDomainsFromCSV === 'function' && csvData.data) {
-
-            try {
-
-                const domains = extractDomainsFromCSV(csvData);
-
-                peopleExcludeDomains = [...new Set(domains.map(d => d.toLowerCase().trim()))];
-
-                console.log('✅ Exclude domains extracted:', peopleExcludeDomains.length, peopleExcludeDomains.slice(0, 5));
-
-            } catch (error) {
-
-                console.warn('⚠️ Domain extraction failed, using simple method:', error);
-
-                // Fallback to simple extraction
-
-                if (csvData.items && csvData.items.length > 0) {
-
-                    peopleExcludeDomains = [...new Set(csvData.items.map(item => cleanDomain(item)))];
-
+function extractDomainsFromCSVData(csvData) {
+    const domainsSet = new Set();
+    if (csvData.data && Array.isArray(csvData.data) && csvData.hasHeaders) {
+        const headers = csvData.data[0];
+        const domainColIndex = headers.findIndex(h => h.toLowerCase().includes('company domain'));
+        if (domainColIndex === -1) {
+            console.warn('Company Domain column not found in CSV headers');
+            return [];
+        }
+        // Start from row 1 to skip headers
+        for (let i = 1; i < csvData.data.length; i++) {
+            const row = csvData.data[i];
+            if (row && row.length > domainColIndex) {
+                const cell = row[domainColIndex];
+                if (typeof cell === 'string') {
+                    const cleaned = cleanDomain(cell);
+                    if (cleaned) domainsSet.add(cleaned);
                 }
-
             }
+        }
+    } else if (csvData.items && Array.isArray(csvData.items)) {
+        csvData.items.forEach(item => {
+            if (typeof item === 'string') {
+                const cleaned = cleanDomain(item);
+                if (cleaned) domainsSet.add(cleaned);
+            }
+        });
+    }
+    return Array.from(domainsSet);
+}
 
-        } else if (csvData.items && csvData.items.length > 0) {
+// FIXED: Create upload components with improved domain extraction
 
-            // Simple extraction for basic CSV
-
+createCSVUploadComponent('people-exclude-domains-upload', function(csvData, file) {
+    console.log('📄 Processing exclude domains CSV:', csvData);
+    
+    try {
+        const domains = extractDomainsFromCSVData(csvData);
+        peopleExcludeDomains = [...new Set(domains)];
+        console.log('✅ Exclude domains extracted:', peopleExcludeDomains.length, peopleExcludeDomains.slice(0, 5));
+    } catch (error) {
+        console.warn('⚠️ Domain extraction failed, using simple method:', error);
+        if (csvData.items && csvData.items.length > 0) {
             peopleExcludeDomains = [...new Set(csvData.items.map(item => cleanDomain(item)))];
-
         }
+    }
+    
+    // Update the manual exclude domains input field to reflect full exclude domains list
+    const excludeInput = document.getElementById('company-domains-excluded');
+    if (excludeInput) {
+        excludeInput.value = peopleExcludeDomains.join(', ');
+    }
+    
+    updatePeopleFilterDisplay();
+    console.log('✅ Exclude domains loaded:', peopleExcludeDomains.length);
+}, {
 
-        
-
-        // Update the manual exclude domains input field to reflect full exclude domains list
-
-        const excludeInput = document.getElementById('company-domains-excluded');
-
-        if (excludeInput) {
-
-            excludeInput.value = peopleExcludeDomains.join(', ');
-
-        }
-
-        
-
-        updatePeopleFilterDisplay();
-
-        console.log('✅ Exclude domains loaded:', peopleExcludeDomains.length);
-
-    }, {
 
         title: 'Exclude Company Domains', 
 
