@@ -409,8 +409,6 @@ const EMPLOYEE_PRESETS = [
 // };
 // shared.js - Common components and utilities
 
-// Create sidebar component
-
 function createSidebar() {
     const currentPath = window.location.pathname;
     const currentKey = localStorage.getItem('selectedApiKey') || 'No key selected';
@@ -468,6 +466,7 @@ function createSidebar() {
         </aside>
     `;
 }
+
 
 
 // Domain validation utility
