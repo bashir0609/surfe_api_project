@@ -431,6 +431,7 @@ function displayResults(data) {
                     const subIndustry = company.subIndustry || '';
                     const description = company.description || '';
                     const founded = company.founded || company.foundedYear || '';
+                    const phones = company.phones || company.phones || '';
                     const hqCountry = company.hqCountry || company.country || '';
                     const linkedin = company.linkedInURL || company.linkedin || company.linkedinUrl || '';
                     
@@ -466,14 +467,28 @@ function displayResults(data) {
                                     <span class="text-gray-500">Founded:</span>
                                     <span class="font-semibold text-gray-700">${founded}</span>
                                 </div>
-                                ` : ''}
+                                `: ''}
                                 
                                 ${hqCountry ? `
                                 <div class="flex justify-between">
                                     <span class="text-gray-500">Country:</span>
                                     <span class="font-semibold text-gray-700">${hqCountry}</span>
                                 </div>
-                                ` : ''}
+                                `: ''}
+                                
+                                ${industry ? `
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Industry:</span>
+                                    <span class="font-semibold text-gray-700">${industry}</span>
+                                </div>
+                                `: ''}
+
+                                ${phones ? `
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Phones:</span>
+                                    <span class="font-semibold text-gray-700">${phones}</span>
+                                </div>
+                                `: ''}
                                 
                                 <div class="pt-2">
                                     <span class="text-gray-500 text-xs">Industries:</span>
@@ -484,11 +499,11 @@ function displayResults(data) {
                                             ).join('')
                                             : '<span class="text-gray-400 text-xs">N/A</span>'
                                         }
-                                        ${subIndustry ? `<span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full mr-1 mb-1">${subIndustry}</span>` : ''}
+                                        ${subIndustry? `<span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full mr-1 mb-1">${subIndustry}</span>` : ''}
                                     </div>
                                 </div>
                                 
-                                ${linkedin ? 
+                                ${linkedin? 
                                     `<div class="pt-2">
                                         <span class="text-gray-500 text-xs">LinkedIn:</span>
                                         <a href="${linkedin}" target="_blank" class="text-blue-500 hover:underline text-xs block">View Profile</a>
