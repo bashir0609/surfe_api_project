@@ -26,12 +26,34 @@ async function loadAPIKeys() {
             if (!stats.last_key_used || stats.last_key_used === "N/A (No API Key Used Yet)") {
                 showNoApiKeySelectedNotification();
             }
+
+            // Disable select button for currently selected key
+            disableSelectedKeyButton(stats.last_key_used);
         } else {
             showError('Failed to load API keys');
         }
     } catch (error) {
         showError('Error loading API keys: ' + error.message);
     }
+}
+
+function disableSelectedKeyButton(selectedKey) {
+    const buttons = document.querySelectorAll('#api-keys-list button');
+    buttons.forEach(button => {
+        if (button.textContent === 'Select') {
+            if (button.getAttribute('onclick')?.includes(`'${selectedKey}'`)) {
+                button.disabled = true;
+                button.textContent = 'Selected';
+                button.classList.add('bg-gray-400', 'cursor-not-allowed');
+                button.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+            } else {
+                button.disabled = false;
+                button.textContent = 'Select';
+                button.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                button.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+            }
+        }
+    });
 }
 
 function updateKeysList(keyDetails) {
