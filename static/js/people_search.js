@@ -1694,37 +1694,21 @@ function initializePeopleSearchCSV() {
 // FIXED: Enhanced filter display update
 
 function updatePeopleFilterDisplay() {
-
     // Update search button if filters are active
-
     const searchButton = document.querySelector('button[type="submit"]');
-
     if (searchButton) {
-
         const filterText = [];
-
         if (peopleIncludeDomains.length > 0) filterText.push(`+${peopleIncludeDomains.length}`);
-
-        if (peopleExcludeDomains.length > 0) filterText.push(`-${peopleExcludeDomains.length}`);
-
+        if (peopleExcludeDomains.length > 0) filterText.push(`${peopleExcludeDomains.length}`); // Removed negative sign
         
-
         const baseText = '🔍 Search People';
-
         searchButton.textContent = filterText.length > 0 ? 
-
             `${baseText} (${filterText.join('/')})` : 
-
             baseText;
-
     }
-
     
-
     // FIXED: Show current filter status
-
     console.log(`🔍 Domain filters updated: Include=${peopleIncludeDomains.length}, Exclude=${peopleExcludeDomains.length}`);
-
 }
 
 
