@@ -428,6 +428,7 @@ function displayResults(data) {
                     const employees = company.employeeCount || company.employees || company.size || null;
                     const revenue = company.revenue || company.annualRevenue || null;
                     const industries = company.industry ? [company.industry] : (company.industries || company.industry || []);
+                    const industry = industries[0] || null;
                     const subIndustry = company.subIndustry || '';
                     const description = company.description || '';
                     const founded = company.founded || company.foundedYear || '';
