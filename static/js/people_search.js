@@ -1655,19 +1655,40 @@ function extractDomainsFromCSVData(csvData) {
     const domainsSet = new Set();
     if (csvData.data && Array.isArray(csvData.data) && csvData.hasHeaders) {
         const headers = csvData.data[0];
-        const domainColIndex = headers.findIndex(h => h.toLowerCase().includes('company domain'));
-        if (domainColIndex === -1) {
-            console.warn('Company Domain column not found in CSV headers');
-            return [];
-        }
-        // Start from row 1 to skip headers
-        for (let i = 1; i < csvData.data.length; i++) {
-            const row = csvData.data[i];
-            if (row && row.length > domainColIndex) {
-                const cell = row[domainColIndex];
-                if (typeof cell === 'string') {
-                    const cleaned = cleanDomain(cell);
-                    if (cleaned) domainsSet.add(cleaned);
+        if (!Array.isArray(headers)) {
+            // If headers is an object (e.g. parsed CSV as array of objects), get keys as headers array
+            const keys = Object.keys(headers);
+            const domainColIndex = keys.findIndex(h => h.toLowerCase().includes('company domain'));
+            if (domainColIndex === -1) {
+                console.warn('Company Domain column not found in CSV headers');
+                return [];
+            }
+            for (let i = 0; i < csvData.data.length; i++) {
+                const row = csvData.data[i];
+                if (row && typeof row === 'object') {
+                    const cell = row[keys[domainColIndex]];
+                    if (typeof cell === 'string') {
+                        const cleaned = cleanDomain(cell);
+                        if (cleaned) domainsSet.add(cleaned);
+                    }
+                }
+            }
+        } else {
+            // headers is array
+            const domainColIndex = headers.findIndex(h => h.toLowerCase().includes('company domain'));
+            if (domainColIndex === -1) {
+                console.warn('Company Domain column not found in CSV headers');
+                return [];
+            }
+            // Start from row 1 to skip headers
+            for (let i = 1; i < csvData.data.length; i++) {
+                const row = csvData.data[i];
+                if (row && row.length > domainColIndex) {
+                    const cell = row[domainColIndex];
+                    if (typeof cell === 'string') {
+                        const cleaned = cleanDomain(cell);
+                        if (cleaned) domainsSet.add(cleaned);
+                    }
                 }
             }
         }
@@ -1681,6 +1702,7 @@ function extractDomainsFromCSVData(csvData) {
     }
     return Array.from(domainsSet);
 }
+
 
 // FIXED: Create upload components with improved domain extraction
 
