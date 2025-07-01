@@ -1693,6 +1693,18 @@ function initializePeopleSearchCSV() {
 
         
 
+        // Update the manual exclude domains input field to reflect full exclude domains list
+
+        const excludeInput = document.getElementById('company-domains-excluded');
+
+        if (excludeInput) {
+
+            excludeInput.value = peopleExcludeDomains.join(', ');
+
+        }
+
+        
+
         updatePeopleFilterDisplay();
 
         console.log('✅ Exclude domains loaded:', peopleExcludeDomains.length);
